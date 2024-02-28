@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from nick_user import nick_user
+import sys
 
 def run():
     intents = discord.Intents.default()
@@ -30,7 +31,7 @@ def run():
 
     @bot.tree.command(name="sync_tree", description="Syncs the commands with the guild. ONLY FOR ADMINS")
     async def sync_tree(interaction:discord.Interaction):
-        if not interaction.user.guild_permissions.administrator or not str(interaction.user.id) == settings.BOT_OWNER_ID:
+        if not interaction.user.guild_permissions.administrator and not str(interaction.user.id) == settings.BOT_OWNER_ID:
             await interaction.response.send_message(PERM_ERROR, ephemeral = True)
             return
         await interaction.response.send_message("Syncing...", ephemeral = True)
@@ -44,7 +45,7 @@ def run():
     @commands.has_permissions(manage_nicknames = True)
     async def force_nick(interaction:discord.Interaction, username: discord.Member, nick:str):
         if not interaction.user.guild_permissions.manage_nicknames:
-            interaction.response.send_message(PERM_ERROR, ephemeral=True)
+            await interaction.response.send_message(PERM_ERROR, ephemeral=True)
             return
         if not interaction.user.guild_permissions.administrator:
             interaction.response.send_message(PERM_ERROR, ephemeral= True)
@@ -70,12 +71,26 @@ def run():
         message = await interaction.original_response()
         i = 0
         for user in nick_users_checkin:
-            if user.id == username.id:
+            if user.user.id == username.id:
                 nick_users_checkin.pop(i)
                 await message.edit(content="Done")
                 return
             i+= 1
         await message.edit(content="No Locks found for user")
+
+    @bot.tree.command(name="say", description="allows the bot to say things")
+    @app_commands.choices()
+    async def say(interaction:discord.Interaction, say: str):
+        await interaction.channel.send(say)
+        await interaction.response.send_message("Done", ephemeral=True)
+
+    @bot.tree.command(name="Stop", description="Shutsdown the bot")
+    async def stop(interaction:discord.Interaction):
+        if(not interaction.user.guild_permissions.administrator and not settings.BOT_OWNER_ID):
+            interaction.response.send_message("Hey! you can't do that!")
+            return
+        interaction.response.send_message("Shutting down", ephemeral=True)
+        sys.exit()
 
     bot.run(settings.DISCORD_API_SECRET)
 
