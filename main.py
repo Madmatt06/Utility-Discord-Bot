@@ -31,7 +31,7 @@ def run():
 
     @bot.tree.command(name="sync_tree", description="Syncs the commands with the guild. ONLY FOR ADMINS")
     async def sync_tree(interaction:discord.Interaction):
-        if not interaction.user.guild_permissions.administrator and not str(interaction.user.id) == settings.BOT_OWNER_ID:
+        if not interaction.user.guild_permissions.administrator and str(interaction.user.id) != settings.BOT_OWNER_ID:
             await interaction.response.send_message(PERM_ERROR, ephemeral = True)
             return
         await interaction.response.send_message("Syncing...", ephemeral = True)
@@ -84,12 +84,15 @@ def run():
         await interaction.channel.send(say)
         await interaction.response.send_message("Done", ephemeral=True)
 
-    @bot.tree.command(name="Stop", description="Shutsdown the bot")
+    @bot.tree.command(name="stop", description="Shutsdown the bot")
     async def stop(interaction:discord.Interaction):
-        if(not interaction.user.guild_permissions.administrator and not settings.BOT_OWNER_ID):
-            interaction.response.send_message("Hey! you can't do that!")
+        if(not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id)):
+            await interaction.response.send_message("Hey! you can't do that!")
             return
-        interaction.response.send_message("Shutting down", ephemeral=True)
+        print(interaction.user.id)
+        await interaction.response.send_message("Shutting down...", ephemeral=True)
+        await bot.close()
+        print("Bot has shutdown.")
         sys.exit()
 
     bot.run(settings.DISCORD_API_SECRET)
