@@ -12,4 +12,4 @@ COPY src ./src
 RUN useradd app
 USER app
 
-CMD ["python3", "main.py"]
+CMD ["python3", "./src/main.py"]
