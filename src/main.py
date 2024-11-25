@@ -16,7 +16,6 @@ def run():
   intents.message_content = True
   intents.members = True
   bot = commands.Bot(command_prefix="#", intents = intents)
-  nick_users_checkin:list[discord.User] = []
   guilds:dict = dict()
 
 
@@ -55,6 +54,7 @@ def run():
 
   @bot.event
   async def on_member_update(member_before:discord.User, member_after:discord.User):
+    # TODO: Add check for server settings
     guild_id = member_after.guild.id
     if not guild_id in guilds:
       add_guild(guild_id)
@@ -94,6 +94,7 @@ def run():
     await edit_message(edit="Done", message=message)
     last_sync = time.time()
 
+  # TODO: Add check for server settings
   @bot.tree.command(name="force_nick", description="Allows you to force a user with permission to change nick to have a specific name")
   @app_commands.choices()
   @commands.has_permissions(manage_nicknames = True)
@@ -140,14 +141,21 @@ def run():
       return
     await respond_message(message= "Removing...",interaction=interaction, ephemeral= True)
     message = await interaction.original_response()
-    i = 0
-    for user in nick_users_checkin:
-      if user.user.id == username.id:
-        nick_users_checkin.pop(i)
-        await edit_message(edit="Done", message= message)
-        return
-      i+= 1
-    await edit_message(edit="No Locks found for user", message=message)
+
+    guild_id:int = interaction.guild_id
+    if not  guild_id in guilds:
+      await edit_message(edit="Name lock has not been used on this server before. Thus there are no name locks found!", message=message)
+      return
+
+    current_guild:guild = guilds[guild_id]
+
+    if not username.id in current_guild.userNicks:
+      await edit_message(edit="No Locks found for user", message=message)
+      return
+
+    current_guild.userNicks.pop(username.id)
+    await edit_message(edit="Done", message= message)
+
 
   @bot.tree.command(name="say", description="allows the bot to say things")
   @app_commands.choices()
