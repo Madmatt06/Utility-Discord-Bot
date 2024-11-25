@@ -6,12 +6,16 @@ from nick_user import nick_user
 import sys
 import requests
 from random import randint
+from guild import guild
+import time
+last_sync:float = time.time()
 def run():
   intents = discord.Intents.default()
   intents.message_content = True
   intents.members = True
   bot = commands.Bot(command_prefix="#", intents = intents)
   nick_users_checkin:list[discord.User] = []
+  guilds:dict = dict()
 
   PERM_ERROR = "Sorry! You dont have the proper permissions for that!"
 
@@ -32,6 +36,12 @@ def run():
       await channel.send(f"{settings.PREFIX} ({message})")
     else:
       await channel.send(message)
+
+  def add_guild(guild_id:int):
+    if guild_id in guilds:
+      print("ERROR: Guild already exists. \"" + str(guild_id) + "\"")
+      return
+    guilds[guild_id] = guild(guild_id)
 
   @bot.event
   async def on_ready():
@@ -55,22 +65,35 @@ def run():
     if not interaction.user.guild_permissions.administrator and str(interaction.user.id) != settings.BOT_OWNER_ID:
       await respond_message(message=PERM_ERROR,interaction=interaction, ephemeral = True)
       return
+
+    global last_sync
+    if (time.time() - last_sync) < 30:
+      await respond_message(message="sync_tree unavaliable. Please wait at last 30 seconds between sync_tree commands.")
+      return
+
     await respond_message(message="Syncing...",interaction=interaction, ephemeral = True)
     await bot.tree.sync()
     print('Command tree synced.')
     message = await interaction.original_response()
     await edit_message(edit="Done", message=message)
+    last_sync = time.time()
 
   @bot.tree.command(name="force_nick", description="Allows you to force a user with permission to change nick to have a specific name")
   @app_commands.choices()
   @commands.has_permissions(manage_nicknames = True)
   async def force_nick(interaction:discord.Interaction, username: discord.Member, nick:str):
+
+    # TODO: Check that this is correct permission checking. Looks very strange
+    # Permission checks
     if not interaction.user.guild_permissions.manage_nicknames:
       await respond_message(message=PERM_ERROR,interaction=interaction, ephemeral=True)
       return
     if not interaction.user.guild_permissions.administrator:
+      # TODO: This is just wrong code. Add await in main branch later
       respond_message(message=PERM_ERROR,interaction=interaction, ephemeral= True)
       return
+
+    # Runs if user has permission
     await respond_message(message="Editing name",interaction=interaction, ephemeral=True)
     message = await interaction.original_response()
     for user in nick_users_checkin:
