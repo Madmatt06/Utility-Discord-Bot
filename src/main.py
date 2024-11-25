@@ -8,6 +8,7 @@ import requests
 from random import randint
 from guild import guild
 import time
+from typing import Literal
 
 last_sync:float = time.time()
 
@@ -39,6 +40,9 @@ def run():
     else:
       await channel.send(message)
 
+  async def settings_denial(interaction:discord.Interaction):
+    await respond_message(message="Sorry, this command is disabled for this server", interaction=interaction, ephemeral=True)
+
   def add_guild(guild_id:int):
     print("Adding new guild, " + str(guild_id))
     if guild_id in guilds:
@@ -54,13 +58,17 @@ def run():
 
   @bot.event
   async def on_member_update(member_before:discord.User, member_after:discord.User):
-    # TODO: Add check for server settings
     guild_id = member_after.guild.id
     if not guild_id in guilds:
       add_guild(guild_id)
       return
 
     current_guild:guild = guilds[guild_id]
+
+    # Checks to see if feature is enabled
+    if not current_guild.settings.rude_features:
+      return
+
     user_id:int = member_after.id
     if not user_id in current_guild.userNicks:
       return
@@ -84,12 +92,12 @@ def run():
 
     global last_sync
     if (time.time() - last_sync) < 30:
-      await respond_message(message="sync_tree unavaliable. Please wait at last 30 seconds between sync_tree commands.")
+      await respond_message(message="sync_tree unavaliable. Please wait at least 30 seconds between sync_tree commands.", interaction=interaction, ephemeral=True)
       return
 
     await respond_message(message="Syncing...",interaction=interaction, ephemeral = True)
     await bot.tree.sync()
-    print('Command tree synced.')
+    print("Command tree synced.")
     message = await interaction.original_response()
     await edit_message(edit="Done", message=message)
     last_sync = time.time()
@@ -110,9 +118,6 @@ def run():
       return
 
     # Runs if user has permission
-    await respond_message(message="Editing name",interaction=interaction, ephemeral=True)
-
-    message = await interaction.original_response()
 
     guild_id:int = interaction.guild_id
 
@@ -121,6 +126,14 @@ def run():
       add_guild(guild_id)
 
     current_guild:guild = guilds[guild_id]
+
+    if not current_guild.settings.rude_features:
+      await settings_denial(interaction=interaction)
+      return
+
+    await respond_message(message="Editing name",interaction=interaction, ephemeral=True)
+
+    message = await interaction.original_response()
 
     is_edited = username.id in current_guild.userNicks
 
@@ -139,15 +152,20 @@ def run():
     if(not interaction.user.guild_permissions.administrator):
       await respond_message(message=PERM_ERROR,interaction=interaction, ephemeral= True)
       return
-    await respond_message(message= "Removing...",interaction=interaction, ephemeral= True)
-    message = await interaction.original_response()
 
     guild_id:int = interaction.guild_id
-    if not  guild_id in guilds:
-      await edit_message(edit="Name lock has not been used on this server before. Thus there are no name locks found!", message=message)
+    if not guild_id in guilds:
+      add_guild(guild_id)
+
+    current_guild: guild = guilds[guild_id]
+
+    # Checks server settings
+    if not current_guild.settings.rude_features:
+      await settings_denial(interaction=interaction)
       return
 
-    current_guild:guild = guilds[guild_id]
+    await respond_message(message= "Removing...",interaction=interaction, ephemeral= True)
+    message = await interaction.original_response()
 
     if not username.id in current_guild.userNicks:
       await edit_message(edit="No Locks found for user", message=message)
@@ -164,6 +182,8 @@ def run():
       return
     await send_message(message=say, channel=interaction.channel)
     await respond_message(message="Done",interaction=interaction, ephemeral=True)
+
+  # TODO: Make faster by caching next image.
   @bot.tree.command(name="cat", description="Generates a cat")
   async def cat(interaction:discord.Interaction):
     img_data = requests.get("https://genrandom.com/api/cat").content
@@ -178,6 +198,31 @@ def run():
     http_codes = [100,101,102,103,200,201,202,203,204,205,206,207,208,214,226,300,301,302,303,304,305,307,308,400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,421,422,423,424,425,426,428,429,431,444,450,451,497,498,499,500,501,502,503,504,506,507,508,509,510,511,521,522,523,525,530,599]
     http_code = http_codes[randint(0, len(http_codes)-1)]
     await interaction.response.send_message("https://http.cat/" + str(http_code))
+
+  @bot.tree.command(name="settings", description="Change settings for server")
+  async def change_settings(interaction: discord.Interaction, toggle: Literal["Enable", "Disable"], setting_change: Literal["Administrative Features", "Rude Features"]):
+    if (not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id)):
+      await respond_message(message="Hey! you can't do that!", interaction=interaction, ephemeral=False)
+      return
+
+    guild_id = interaction.guild_id
+    if not guild_id in guilds:
+      add_guild(guild_id)
+
+    current_guild:guild = guilds[guild_id]
+
+    action = False
+    if toggle == "Enable":
+      action = True
+
+    if setting_change == "Administrative Features":
+      current_guild.settings.administrative_features = bool(action)
+      await respond_message(message="Administrative features enabled", interaction=interaction, ephemeral=True)
+    elif setting_change == "Rude Features":
+      # This setting is a bit more serious. Prefix setting will be ignored.
+      current_guild.settings.rude_features = bool(action)
+      await interaction.response.send_message("Rude features enabled. These are less obvious administrative features and should not be used for fun without others permission (Should be last option for administrative purposes). Use them wisely.", ephemeral=True)
+
 
   @bot.tree.command(name="stop", description="Shutsdown the bot")
   async def stop(interaction:discord.Interaction):
