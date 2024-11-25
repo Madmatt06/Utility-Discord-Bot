@@ -2,13 +2,15 @@ import settings
 import discord
 from discord.ext import commands
 from discord import app_commands
-from nick_user import nick_user
+from nickuser import NickUser
 import sys
 import requests
 from random import randint
 from guild import guild
 import time
+
 last_sync:float = time.time()
+
 def run():
   intents = discord.Intents.default()
   intents.message_content = True
@@ -16,6 +18,7 @@ def run():
   bot = commands.Bot(command_prefix="#", intents = intents)
   nick_users_checkin:list[discord.User] = []
   guilds:dict = dict()
+
 
   PERM_ERROR = "Sorry! You dont have the proper permissions for that!"
 
@@ -38,6 +41,7 @@ def run():
       await channel.send(message)
 
   def add_guild(guild_id:int):
+    print("Adding new guild, " + str(guild_id))
     if guild_id in guilds:
       print("ERROR: Guild already exists. \"" + str(guild_id) + "\"")
       return
@@ -50,11 +54,23 @@ def run():
     print("--------------------------------------")
 
   @bot.event
-  async def on_member_update(memberBefore:discord.User, memberAfter:discord.User):
-    for user_nick in nick_users_checkin:
-      if memberBefore.id == user_nick.user.id and memberAfter.nick != user_nick.nick:
-        await memberAfter.edit(nick=user_nick.nick)
-        return
+  async def on_member_update(member_before:discord.User, member_after:discord.User):
+    guild_id = member_after.guild.id
+    if not guild_id in guilds:
+      add_guild(guild_id)
+      return
+
+    current_guild:guild = guilds[guild_id]
+    user_id:int = member_after.id
+    if not user_id in current_guild.userNicks:
+      return
+
+    user:NickUser = current_guild.userNicks[user_id]
+
+    if member_after.nick != user.nick:
+      await member_after.edit(nick=user.nick)
+      return
+    return
 
   @bot.tree.command(name="ping", description="allows you to test if the bot is functioning")
   async def ping(interaction:discord.Interaction):
@@ -89,20 +105,31 @@ def run():
       await respond_message(message=PERM_ERROR,interaction=interaction, ephemeral=True)
       return
     if not interaction.user.guild_permissions.administrator:
-      # TODO: This is just wrong code. Add await in main branch later
-      respond_message(message=PERM_ERROR,interaction=interaction, ephemeral= True)
+      await respond_message(message=PERM_ERROR,interaction=interaction, ephemeral= True)
       return
 
     # Runs if user has permission
     await respond_message(message="Editing name",interaction=interaction, ephemeral=True)
+
     message = await interaction.original_response()
-    for user in nick_users_checkin:
-      if user.user.id == username.id:
-        await edit_message(edit="There is already a nickname lock for this user",message=message)
-        return
-    nick_users_checkin.append(nick_user(user=username,nick=nick))
+
+    guild_id:int = interaction.guild_id
+
+    # Checks to see if the guild already exists in bots data base
+    if not guild_id in guilds:
+      add_guild(guild_id)
+
+    current_guild:guild = guilds[guild_id]
+
+    is_edited = username.id in current_guild.userNicks
+
+    current_guild.userNicks[username.id] = NickUser(username.id, nick)
+
     await username.edit(nick = nick)
-    await edit_message(edit="Done", message=message)
+    if not is_edited:
+      await edit_message(edit="Nickname lock set", message=message)
+    else:
+      await edit_message(edit="Existing Nickname lock edited", message=message)
 
   @bot.tree.command(name="remove_nick_lock", description="Allows you remove a locked nickname")
   @app_commands.choices()
