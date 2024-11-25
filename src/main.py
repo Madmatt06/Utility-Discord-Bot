@@ -39,6 +39,9 @@ def run():
     else:
       await channel.send(message)
 
+  async def settings_denial(interaction:discord.Interaction):
+    await respond_message(message="Sorry, this command is disabled for this server", interaction=interaction, ephemeral=True)
+
   def add_guild(guild_id:int):
     print("Adding new guild, " + str(guild_id))
     if guild_id in guilds:
@@ -54,13 +57,17 @@ def run():
 
   @bot.event
   async def on_member_update(member_before:discord.User, member_after:discord.User):
-    # TODO: Add check for server settings
     guild_id = member_after.guild.id
     if not guild_id in guilds:
       add_guild(guild_id)
       return
 
     current_guild:guild = guilds[guild_id]
+
+    # Checks to see if feature is enabled
+    if not current_guild.settings.rude_features:
+      return
+
     user_id:int = member_after.id
     if not user_id in current_guild.userNicks:
       return
@@ -89,7 +96,7 @@ def run():
 
     await respond_message(message="Syncing...",interaction=interaction, ephemeral = True)
     await bot.tree.sync()
-    print('Command tree synced.')
+    print("Command tree synced.")
     message = await interaction.original_response()
     await edit_message(edit="Done", message=message)
     last_sync = time.time()
@@ -110,9 +117,6 @@ def run():
       return
 
     # Runs if user has permission
-    await respond_message(message="Editing name",interaction=interaction, ephemeral=True)
-
-    message = await interaction.original_response()
 
     guild_id:int = interaction.guild_id
 
@@ -121,6 +125,14 @@ def run():
       add_guild(guild_id)
 
     current_guild:guild = guilds[guild_id]
+
+    if not current_guild.settings.rude_features:
+      await settings_denial(interaction=interaction)
+      return
+
+    await respond_message(message="Editing name",interaction=interaction, ephemeral=True)
+
+    message = await interaction.original_response()
 
     is_edited = username.id in current_guild.userNicks
 
@@ -139,15 +151,20 @@ def run():
     if(not interaction.user.guild_permissions.administrator):
       await respond_message(message=PERM_ERROR,interaction=interaction, ephemeral= True)
       return
-    await respond_message(message= "Removing...",interaction=interaction, ephemeral= True)
-    message = await interaction.original_response()
 
     guild_id:int = interaction.guild_id
-    if not  guild_id in guilds:
-      await edit_message(edit="Name lock has not been used on this server before. Thus there are no name locks found!", message=message)
+    if not guild_id in guilds:
+      add_guild(guild_id)
+
+    current_guild: guild = guilds[guild_id]
+
+    # Checks server settings
+    if not current_guild.settings.rude_features:
+      await settings_denial(interaction=interaction)
       return
 
-    current_guild:guild = guilds[guild_id]
+    await respond_message(message= "Removing...",interaction=interaction, ephemeral= True)
+    message = await interaction.original_response()
 
     if not username.id in current_guild.userNicks:
       await edit_message(edit="No Locks found for user", message=message)
@@ -164,6 +181,8 @@ def run():
       return
     await send_message(message=say, channel=interaction.channel)
     await respond_message(message="Done",interaction=interaction, ephemeral=True)
+
+  # TODO: Make faster by caching next image.
   @bot.tree.command(name="cat", description="Generates a cat")
   async def cat(interaction:discord.Interaction):
     img_data = requests.get("https://genrandom.com/api/cat").content
