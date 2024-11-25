@@ -9,6 +9,7 @@ from random import randint
 from guild import guild
 import time
 from typing import Literal
+from setting import setting
 
 last_sync:float = time.time()
 
@@ -17,7 +18,7 @@ def run():
   intents.message_content = True
   intents.members = True
   bot = commands.Bot(command_prefix="#", intents = intents)
-  guilds:dict = dict()
+  guilds:dict[int, guild] = {}
 
 
   PERM_ERROR = "Sorry! You dont have the proper permissions for that!"
@@ -48,7 +49,8 @@ def run():
     if guild_id in guilds:
       print("ERROR: Guild already exists. \"" + str(guild_id) + "\"")
       return
-    guilds[guild_id] = guild(guild_id)
+    guilds[guild_id] = guild(guild_id, setting(), {})
+    print(guilds.keys())
 
   @bot.event
   async def on_ready():
@@ -64,7 +66,7 @@ def run():
       return
 
     current_guild:guild = guilds[guild_id]
-
+    print(current_guild.guild)
     # Checks to see if feature is enabled
     if not current_guild.settings.rude_features:
       return
@@ -127,7 +129,8 @@ def run():
 
     current_guild:guild = guilds[guild_id]
 
-    if not current_guild.settings.rude_features:
+    print(guild_id)
+    if current_guild.settings.rude_features == False:
       await settings_denial(interaction=interaction)
       return
 
