@@ -91,7 +91,7 @@ def run():
 
     global last_sync
     if (time.time() - last_sync) < 30:
-      await respond_message(message="sync_tree unavaliable. Please wait at last 30 seconds between sync_tree commands.")
+      await respond_message(message="sync_tree unavaliable. Please wait at least 30 seconds between sync_tree commands.", interaction=interaction, ephemeral=True)
       return
 
     await respond_message(message="Syncing...",interaction=interaction, ephemeral = True)
