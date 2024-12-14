@@ -72,13 +72,7 @@ def run():
     await edit_message(edit="Done", message=message)
     last_sync = time.time()
 
-  @bot.tree.command(name="say", description="allows the bot to say things")
-  @app_commands.choices()
-  async def say(interaction:discord.Interaction, say: str):
-    if(not interaction.user.guild_permissions.administrator):
-      return
-    await send_message(message=say, channel=interaction.channel)
-    await respond_message(message="Done",interaction=interaction, ephemeral=True)
+
 
   # TODO: Make faster by caching next image.
   @bot.tree.command(name="cat", description="Generates a cat")
