@@ -5,7 +5,7 @@ from src.cogs.nick_lock.nickuser import NickUser
 from src.cogs.nick_lock.guild import guild
 from src.cogs.defaults import *
 from src.cogs.nick_lock.setting import setting
-from src.cogs.bot_library import *
+from src.cogs.bot_library import respond_message,edit_message
 from typing import Literal
 
 
