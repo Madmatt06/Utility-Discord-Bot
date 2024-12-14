@@ -48,11 +48,6 @@ def run():
     print("--------------------------------------")
 
 
-
-  @bot.tree.command(name="ping", description="allows you to test if the bot is functioning")
-  async def ping(interaction:discord.Interaction):
-    await respond_message(message="pong",interaction=interaction, ephemeral=True)
-
   @bot.tree.command(name="sync_tree", description="Syncs the cogs with the guild. ONLY FOR ADMINS")
   async def sync_tree(interaction:discord.Interaction):
     if not interaction.user.guild_permissions.administrator and str(interaction.user.id) != settings.BOT_OWNER_ID:
