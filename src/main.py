@@ -63,7 +63,7 @@ def run():
 
     global last_sync
     if (time.time() - last_sync) < 30:
-      await respond_message(message="sync_tree unavaliable. Please wait at least 30 seconds between sync_tree cogs.", interaction=interaction, ephemeral=True)
+      await respond_message(message="sync_tree unavailable. Please wait at least 30 seconds between sync_tree cogs.", interaction=interaction, ephemeral=True)
       return
 
     await respond_message(message="Syncing...",interaction=interaction, ephemeral = True)
@@ -99,7 +99,7 @@ def run():
 
 
 
-  @bot.tree.command(name="stop", description="Shutsdown the bot")
+  @bot.tree.command(name="stop", description="Shutdown the bot")
   async def stop(interaction:discord.Interaction):
     if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
       await respond_message(message="Hey! you can't do that!",interaction=interaction, ephemeral=False)
