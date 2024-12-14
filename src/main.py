@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 import sys
-import requests
 import time
 import os
 from cogs.defaults import *
-from cogs.bot_library import *
+from cogs.bot_library import send_message,respond_message,edit_message
+import settings
 
 last_sync:float = time.time()
 
@@ -71,20 +70,6 @@ def run():
     message = await interaction.original_response()
     await edit_message(edit="Done", message=message)
     last_sync = time.time()
-
-
-
-  # TODO: Make faster by caching next image.
-  @bot.tree.command(name="cat", description="Generates a cat")
-  async def cat(interaction:discord.Interaction):
-    img_data = requests.get("https://genrandom.com/api/cat").content
-    with open('image_name.jpg', 'wb') as image:
-      image.write(img_data)
-    with open('image_name.jpg', 'rb') as image:
-      imageFile = discord.File(image)
-      await interaction.response.send_message(file=imageFile)
-
-
 
 
   @bot.tree.command(name="stop", description="Shutdown the bot")
