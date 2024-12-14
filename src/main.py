@@ -1,86 +1,55 @@
-import settings
 import discord
 from discord.ext import commands
 from discord import app_commands
-from src.cogs.nickuser import NickUser
 import sys
 import requests
 from random import randint
-from src.cogs.guild import guild
 import time
-from typing import Literal
-from src.cogs.setting import setting
+import os
+from cogs.defaults import *
+from cogs.bot_library import *
 
 last_sync:float = time.time()
+
+
 
 def run():
   intents = discord.Intents.default()
   intents.message_content = True
   intents.members = True
   bot = commands.Bot(command_prefix="#", intents = intents)
-  guilds:dict[int, guild] = {}
 
 
-  PERM_ERROR = "Sorry! You dont have the proper permissions for that!"
 
-  async def respond_message(message:str,interaction:discord.Interaction, ephemeral:bool):
-    if settings.PREFIX:
-      await interaction.response.send_message(f"{settings.PREFIX} ({message})", ephemeral=ephemeral)
-    else:
-      await interaction.response.send_message(message, ephemeral=ephemeral)
 
-  async def edit_message(edit:str, message:discord.Interaction.original_response):
-    if settings.PREFIX:
-      await message.edit(content=f"{settings.PREFIX} ({edit})")
-    else:
-      await message.edit(content=edit)
+  async def load_cog(cog_path:str):
+    print(f"Loading Cog {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
+    await bot.load_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
 
-  async def send_message(message:str,channel:discord.Interaction.channel):
-    if settings.PREFIX:
-      await channel.send(f"{settings.PREFIX} ({message})")
-    else:
-      await channel.send(message)
+  async def load_cogs(PATH:str = "./cogs", LEVEL:int = 0):
+    MAX:int = 3
+    COG_PRE = "COG_"
+    PY_EXT = ".py"
+    for filename in os.listdir(PATH):
+      if filename.endswith(PY_EXT) and filename.startswith(COG_PRE):
+        cog_path = os.path.join(PATH, filename)
+        await load_cog(cog_path)
+      elif MAX >= LEVEL:
+        new_path = os.path.join(PATH, filename)
+        if os.path.isdir(new_path):
+          await load_cogs(new_path, LEVEL+1)
 
-  async def settings_denial(interaction:discord.Interaction):
-    await respond_message(message="Sorry, this command is disabled for this server", interaction=interaction, ephemeral=True)
-
-  def add_guild(guild_id:int):
-    print("Adding new guild, " + str(guild_id))
-    if guild_id in guilds:
-      print("ERROR: Guild already exists. \"" + str(guild_id) + "\"")
-      return
-    guilds[guild_id] = guild(guild_id, setting(), {})
-    print(guilds.keys())
 
   @bot.event
   async def on_ready():
+    print("Loading cogs")
+    await load_cogs()
+    print("Cogs loaded")
     print(f"Bot Name: {bot.user}")
     print(f"Bot ID: {bot.user.id}")
     print("--------------------------------------")
 
-  @bot.event
-  async def on_member_update(member_before:discord.User, member_after:discord.User):
-    guild_id = member_after.guild.id
-    if not guild_id in guilds:
-      add_guild(guild_id)
-      return
 
-    current_guild:guild = guilds[guild_id]
-    print(current_guild.guild)
-    # Checks to see if feature is enabled
-    if not current_guild.settings.rude_features:
-      return
-
-    user_id:int = member_after.id
-    if not user_id in current_guild.userNicks:
-      return
-
-    user:NickUser = current_guild.userNicks[user_id]
-
-    if member_after.nick != user.nick:
-      await member_after.edit(nick=user.nick)
-      return
-    return
 
   @bot.tree.command(name="ping", description="allows you to test if the bot is functioning")
   async def ping(interaction:discord.Interaction):
@@ -128,34 +97,11 @@ def run():
     http_code = http_codes[randint(0, len(http_codes)-1)]
     await interaction.response.send_message("https://http.cat/" + str(http_code))
 
-  @bot.tree.command(name="settings", description="Change settings for server")
-  async def change_settings(interaction: discord.Interaction, toggle: Literal["Enable", "Disable"], setting_change: Literal["Administrative Features", "Rude Features"]):
-    if (not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id)):
-      await respond_message(message="Hey! you can't do that!", interaction=interaction, ephemeral=False)
-      return
-
-    guild_id = interaction.guild_id
-    if not guild_id in guilds:
-      add_guild(guild_id)
-
-    current_guild:guild = guilds[guild_id]
-
-    action = False
-    if toggle == "Enable":
-      action = True
-
-    if setting_change == "Administrative Features":
-      current_guild.settings.administrative_features = bool(action)
-      await respond_message(message="Administrative features enabled", interaction=interaction, ephemeral=True)
-    elif setting_change == "Rude Features":
-      # This setting is a bit more serious. Prefix setting will be ignored.
-      current_guild.settings.rude_features = bool(action)
-      await interaction.response.send_message("Rude features enabled. These are less obvious administrative features and should not be used for fun without others permission (Should be last option for administrative purposes). Use them wisely.", ephemeral=True)
 
 
   @bot.tree.command(name="stop", description="Shutsdown the bot")
   async def stop(interaction:discord.Interaction):
-    if(not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id)):
+    if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
       await respond_message(message="Hey! you can't do that!",interaction=interaction, ephemeral=False)
       return
     print(interaction.user.id)

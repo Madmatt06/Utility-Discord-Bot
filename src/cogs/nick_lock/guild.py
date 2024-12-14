@@ -1,4 +1,4 @@
-from setting import setting
+from src.cogs.nick_lock.setting import setting
 
 # This is the basic data model for keeping track of users and their assigned nicknames
 class guild:
