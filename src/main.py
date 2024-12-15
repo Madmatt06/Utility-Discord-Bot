@@ -4,6 +4,7 @@ import sys
 import os
 from cogs.bot_library import send_message,respond_message,edit_message
 import settings
+import asyncio
 
 
 
@@ -14,7 +15,7 @@ def run():
   bot = commands.Bot(command_prefix="#", intents = intents)
 
   async def load_cog(cog_path:str):
-    print(f"Loading Cog {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
+    print(f"Loading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
     await bot.load_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
 
   async def load_cogs(PATH:str = "./cogs", LEVEL:int = 0):
@@ -30,11 +31,13 @@ def run():
         if os.path.isdir(new_path):
           await load_cogs(new_path, LEVEL+1)
 
+  async def main():
+    async with bot:
+      await load_cogs()
+      await bot.start(settings.DISCORD_API_SECRET)
+
   @bot.event
   async def on_ready():
-    print("Loading cogs")
-    await load_cogs()
-    print("Cogs loaded")
     print(f"Bot Name: {bot.user}")
     print(f"Bot ID: {bot.user.id}")
     print("--------------------------------------")
@@ -50,7 +53,7 @@ def run():
     print("Bot has shutdown.")
     sys.exit()
 
-  bot.run(settings.DISCORD_API_SECRET)
+  asyncio.run(main())
 
 if __name__ == "__main__":
   run()
