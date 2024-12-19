@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import sys
 import os
-from cogs.bot_library import send_message,respond_message,edit_message
+from cogs.bot_library import respond_message
 import settings
 import asyncio
 
