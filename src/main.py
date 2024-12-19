@@ -5,8 +5,7 @@ import os
 from cogs.bot_library import respond_message
 import settings
 import asyncio
-
-
+import logging
 
 def run():
   intents = discord.Intents.default()
@@ -53,6 +52,11 @@ def run():
     print("Bot has shutdown.")
     sys.exit()
 
+  logger = logging.getLogger('discord')
+  logger.setLevel(logging.DEBUG)
+  handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+  handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+  logger.addHandler(handler)
   asyncio.run(main())
 
 if __name__ == "__main__":

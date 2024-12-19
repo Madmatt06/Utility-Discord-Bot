@@ -6,3 +6,4 @@ __pycache__/
 .venv/
 .idea/
 image_name.jpg
+/src/discord.log
