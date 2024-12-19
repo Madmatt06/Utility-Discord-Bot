@@ -11,7 +11,7 @@ The formatting is still a mess right now but hopefully I will get that fixed soo
 ### Cat command
 Gets a random cat picture from a free api I found
 
-### Bad Joke Command
+### [Bad Joke Command](../../src/cogs/bad_joke)
 Gets a random joke from a free api I found
 
 ### Cattp
