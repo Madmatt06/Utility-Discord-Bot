@@ -5,7 +5,7 @@ import requests
 from src.cogs.bot_library import respond_message
 
 
-class bad_joke(commands.Cog):
+class BadJoke(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -19,5 +19,5 @@ class bad_joke(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(bad_joke(bot))
+    await bot.add_cog(BadJoke(bot))
     print("bad_joke is loaded")

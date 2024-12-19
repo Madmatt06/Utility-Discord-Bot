@@ -4,7 +4,7 @@ from discord import app_commands
 from random import randint
 
 
-class cattp(commands.Cog):
+class Cattp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -19,5 +19,5 @@ class cattp(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(cattp(bot))
+    await bot.add_cog(Cattp(bot))
     print("cattp is loaded")

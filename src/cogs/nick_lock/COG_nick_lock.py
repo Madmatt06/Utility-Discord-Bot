@@ -14,7 +14,7 @@ async def settings_denial(interaction: discord.Interaction):
                           ephemeral=True)
 
 
-class nick_lock(commands.Cog):
+class NickLock(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guilds: dict[int, Guild] = {}
@@ -161,5 +161,5 @@ class nick_lock(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(nick_lock(bot))
+    await bot.add_cog(NickLock(bot))
     print("nick_lock is loaded")

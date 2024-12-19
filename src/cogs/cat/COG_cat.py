@@ -4,7 +4,7 @@ import requests
 import discord
 
 
-class cat(commands.Cog):
+class Cat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -20,5 +20,5 @@ class cat(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(cat(bot))
+    await bot.add_cog(Cat(bot))
     print("cat is loaded")

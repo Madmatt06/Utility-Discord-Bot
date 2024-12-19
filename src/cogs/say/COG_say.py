@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from src.cogs.bot_library import send_message, respond_message
 
-class say(commands.Cog):
+class Say(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -17,5 +17,5 @@ class say(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(say(bot))
+    await bot.add_cog(Say(bot))
     print("say is loaded")

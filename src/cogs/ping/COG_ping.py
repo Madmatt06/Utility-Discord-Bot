@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import app_commands,Interaction
 from src.cogs.bot_library import respond_message
 
-class ping(commands.Cog):
+class Ping(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -12,5 +12,5 @@ class ping(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(ping(bot))
+    await bot.add_cog(Ping(bot))
     print("ping is loaded")

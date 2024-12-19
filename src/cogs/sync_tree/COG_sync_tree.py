@@ -5,7 +5,7 @@ from src.cogs.bot_library import respond_message,edit_message
 import src.settings as settings
 import time
 
-class sync_tree(commands.Cog):
+class SyncTree(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.last_sync:float = time.time()
@@ -31,5 +31,5 @@ class sync_tree(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(sync_tree(bot))
+    await bot.add_cog(SyncTree(bot))
     print("sync_tree is loaded")
