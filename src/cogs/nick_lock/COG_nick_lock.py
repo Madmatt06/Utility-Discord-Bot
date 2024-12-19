@@ -6,6 +6,7 @@ from src.cogs.nick_lock.guild import Guild
 from src.cogs.defaults import *
 from src.cogs.bot_library import respond_message,edit_message
 from typing import Literal
+import logging
 
 
 async def settings_denial(interaction: discord.Interaction):
@@ -89,7 +90,17 @@ class nick_lock(commands.Cog):
 
         current_guild.user_nicks[username.id] = NickUser(username.id, nick)
 
-        await username.edit(nick=nick)
+        try:
+            await username.edit(nick=nick)
+        except discord.errors.Forbidden:
+            await edit_message(edit="Looks like I don't have permissions to do that!", message=message)
+            return
+        except Exception as bot_error:
+            # Keeps User informed something happened and raises error to make debugging easier
+            await edit_message(edit="Sorry, I can't do that right now. Try again later.", message=message)
+            logging.error(bot_error)
+            raise
+
         if not is_edited:
             await edit_message(edit="Nickname lock set", message=message)
         else:
