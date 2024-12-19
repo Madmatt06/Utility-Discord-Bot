@@ -125,6 +125,7 @@ class nick_lock(commands.Cog):
         await edit_message(edit="Done", message=message)
 
     @app_commands.command(name="settings", description="Change settings for server")
+    @commands.has_permissions(administrator=True)
     async def change_settings(self, interaction: discord.Interaction, toggle: Literal["Enable", "Disable"],
                               setting_change: Literal["Nick Lock"]):
         if not interaction.user.guild_permissions.administrator:
