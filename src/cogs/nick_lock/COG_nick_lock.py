@@ -108,7 +108,6 @@ class nick_lock(commands.Cog):
 
     @app_commands.command(name="remove_nick_lock", description="Allows you remove a locked nickname")
     @app_commands.choices()
-    @commands.has_permissions(manage_nicknames=True)
     async def remove_lock_nick(self, interaction: discord.Interaction, username: discord.Member):
         if not interaction.user.guild_permissions.administrator:
             await respond_message(message=PERM_ERROR, interaction=interaction, ephemeral=True)
