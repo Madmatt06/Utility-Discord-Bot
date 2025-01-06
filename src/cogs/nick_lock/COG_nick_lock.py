@@ -5,7 +5,6 @@ from src.cogs.nick_lock.nickuser import NickUser
 from src.cogs.nick_lock.guild import Guild
 from src.cogs.defaults import *
 from src.cogs.bot_library import respond_message, edit_message, create_command
-from typing import Literal
 import logging
 
 
@@ -122,9 +121,9 @@ class NickLock(commands.Cog):
         current_guild: Guild = self.guilds[guild_id]
 
         # Checks server settings
-        if not current_guild.enabled:
-            await settings_denial(interaction=interaction)
-            return
+        #if not current_guild.enabled:
+        #    await settings_denial(interaction=interaction)
+        #    return
 
         await respond_message(message="Removing...", interaction=interaction, ephemeral=True)
         message = await interaction.original_response()
@@ -136,32 +135,6 @@ class NickLock(commands.Cog):
         current_guild.user_nicks.pop(username.id)
         await edit_message(edit="Done", message=message)
 
-
-    settings_name: str = create_command("settings")
-    @app_commands.command(name=settings_name, description="Change settings for server")
-    @commands.has_permissions(administrator=True)
-    async def change_settings(self, interaction: discord.Interaction, toggle: Literal["Enable", "Disable"],
-                              setting_change: Literal["Nick Lock"]):
-        if not interaction.user.guild_permissions.administrator:
-            await respond_message(message="Hey! you can't do that!", interaction=interaction, ephemeral=False)
-            return
-
-        guild_id = interaction.guild_id
-        if not guild_id in self.guilds:
-            self.add_guild(guild_id)
-
-        current_guild: Guild = self.guilds[guild_id]
-
-        action = False
-        if toggle == "Enable":
-            action = True
-
-        if setting_change == "Nick Lock":
-            # This setting is a bit more sketchy. Prefix setting will be ignored.
-            current_guild.enabled = bool(action)
-            await interaction.response.send_message(
-                "Nick Lock enabled. This is a less obvious administrative features and should not be used for fun without others permission (Should be last option for administrative purposes). Use them wisely.",
-                ephemeral=True)
 
 
 async def setup(bot):
