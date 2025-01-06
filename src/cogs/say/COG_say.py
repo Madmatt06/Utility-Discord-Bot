@@ -13,11 +13,11 @@ class Say(commands.Cog):
         @app_commands.command(name=create_command("say"), description="allows the bot to say things")
         @app_commands.choices()
         async def say(self, interaction: discord.Interaction, say: str):
-            if not interaction.user.id == BOT_OWNER_ID and SAY_PERMS == "0":
+            if interaction.user.id != int(BOT_OWNER_ID) and SAY_PERMS == "0":
                 return
             if not interaction.user.guild_permissions.administrator and SAY_PERMS == "1":
                 return
-            if not interaction.user.id == BOT_OWNER_ID and not interaction.user.guild_permissions.administrator and SAY_PERMS == "2":
+            if not interaction.user.id != int(BOT_OWNER_ID) and not interaction.user.guild_permissions.administrator and SAY_PERMS == "2":
                 return
             await send_message(message=say, channel=interaction.channel)
             await respond_message(message="Done", interaction=interaction, ephemeral=True)
