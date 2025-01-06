@@ -17,8 +17,10 @@ class Say(commands.Cog):
                 return
             if not interaction.user.guild_permissions.administrator and SAY_PERMS == "1":
                 return
-            if not interaction.user.id != int(BOT_OWNER_ID) and not interaction.user.guild_permissions.administrator and SAY_PERMS == "2":
+            if interaction.user.id != int(BOT_OWNER_ID) and not interaction.user.guild_permissions.administrator and SAY_PERMS == "2":
                 return
+            if SAY_PERMS == "3":
+                print(f"WARNING: Permissions are very broad for say command and bot will say anything it is told to. Consider lowering the permission levels. Currently saying \"{say}\"")
             await send_message(message=say, channel=interaction.channel)
             await respond_message(message="Done", interaction=interaction, ephemeral=True)
 
