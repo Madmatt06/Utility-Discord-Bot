@@ -10,8 +10,7 @@ class Cattp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    cattp_name: str = create_command("cattp")
-    @app_commands.command(name=cattp_name, description="Random HTTP code cat style")
+    @app_commands.command(name=create_command("cattp"), description="Random HTTP code cat style")
     async def cattp(self, interaction: discord.Interaction):
         http_codes = [100, 101, 102, 103, 200, 201, 202, 203, 204, 205, 206, 207, 208, 214, 226, 300, 301, 302, 303,
                       304, 305, 307, 308, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414,

@@ -11,8 +11,7 @@ class Cat(commands.Cog):
         self.bot = bot
 
     # TODO: Make faster by caching next image.
-    cat_name: str = create_command("cat")
-    @app_commands.command(name=cat_name, description="Generates a cat")
+    @app_commands.command(name=create_command("cat"), description="Generates a cat")
     async def cat(self, interaction: discord.Interaction):
         img_data = requests.get("https://genrandom.com/api/cat").content
         with open('image_name.jpg', 'wb') as image:

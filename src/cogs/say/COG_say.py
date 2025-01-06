@@ -9,8 +9,7 @@ class Say(commands.Cog):
         self.bot = bot
 
 
-    say_name: str = create_command("say")
-    @app_commands.command(name=say_name, description="allows the bot to say things")
+    @app_commands.command(name=create_command("say"), description="allows the bot to say things")
     @app_commands.choices()
     async def say(self, interaction: discord.Interaction, say: str):
         if not interaction.user.guild_permissions.administrator:

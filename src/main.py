@@ -44,8 +44,7 @@ def run():
     print(f"Bot ID: {bot.user.id}")
     print("--------------------------------------")
 
-  stop_name: str = create_command("stop")
-  @bot.tree.command(name=stop_name, description="Shutdown the bot")
+  @bot.tree.command(name=create_command("stop"), description="Shutdown the bot")
   async def stop(interaction:discord.Interaction):
     if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
       await respond_message(message="Hey! you can't do that!",interaction=interaction, ephemeral=False)

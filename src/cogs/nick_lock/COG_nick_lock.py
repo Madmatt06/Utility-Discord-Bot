@@ -51,8 +51,7 @@ class NickLock(commands.Cog):
             return
         return
 
-    force_nick_name: str = create_command("force nick")
-    @app_commands.command(name=force_nick_name,
+    @app_commands.command(name=create_command("force nick"),
                       description="Allows you to force a user with permission to change nick to have a specific name")
     @app_commands.choices()
     @commands.has_permissions(manage_nicknames=True)
@@ -107,8 +106,7 @@ class NickLock(commands.Cog):
             await edit_message(edit="Existing Nickname lock edited", message=message)
 
 
-    remove_nick_lock_name: str = create_command("remove nick lock")
-    @app_commands.command(name=remove_nick_lock_name, description="Allows you remove a locked nickname")
+    @app_commands.command(name=create_command("remove nick lock"), description="Allows you remove a locked nickname")
     @app_commands.choices()
     async def remove_lock_nick(self, interaction: discord.Interaction, username: discord.Member):
         if not interaction.user.guild_permissions.administrator:
