@@ -20,22 +20,26 @@ def run():
     print(f"Loading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
     await bot.load_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
 
-  async def load_cogs(PATH:str = "./cogs", LEVEL:int = 0):
+  async def load_cogs(PATH:str = "./cogs", LEVEL:int = 0, LATE:bool = False):
     MAX:int = 3
     COG_PRE = "COG_"
+    LATE_COG_PRE = "LCOG"
     PY_EXT = ".py"
     for filename in os.listdir(PATH):
-      if filename.endswith(PY_EXT) and filename.startswith(COG_PRE):
-        cog_path = os.path.join(PATH, filename)
-        await load_cog(cog_path)
-      elif MAX >= LEVEL:
-        new_path = os.path.join(PATH, filename)
-        if os.path.isdir(new_path):
-          await load_cogs(new_path, LEVEL+1)
+      path = os.path.join(PATH, filename)
+      if filename.endswith(PY_EXT) and filename.startswith(COG_PRE) and not LATE:
+        await load_cog(path)
+      elif filename.endswith(PY_EXT) and filename.startswith(LATE_COG_PRE) and LATE:
+        await load_cog(path)
+      elif MAX >= LEVEL and os.path.isdir(path):
+        await load_cogs(path, LEVEL+1, LATE)
 
   async def main():
     async with bot:
+      print("Loading first cogs")
       await load_cogs()
+      print("Loading last cogs")
+      await load_cogs(LATE=True)
       await bot.start(settings.DISCORD_API_SECRET)
 
   @bot.event
