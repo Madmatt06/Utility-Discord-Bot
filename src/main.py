@@ -7,6 +7,9 @@ import settings
 import asyncio
 import logging
 
+from src.cogs.bot_library import create_command
+
+
 def run():
   intents = discord.Intents.default()
   intents.message_content = True
@@ -41,7 +44,8 @@ def run():
     print(f"Bot ID: {bot.user.id}")
     print("--------------------------------------")
 
-  @bot.tree.command(name="stop", description="Shutdown the bot")
+  stop_name: str = create_command("stop")
+  @bot.tree.command(name=stop_name, description="Shutdown the bot")
   async def stop(interaction:discord.Interaction):
     if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
       await respond_message(message="Hey! you can't do that!",interaction=interaction, ephemeral=False)

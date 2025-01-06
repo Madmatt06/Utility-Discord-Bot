@@ -1,13 +1,16 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from src.cogs.bot_library import send_message, respond_message
+from src.cogs.bot_library import send_message, respond_message, create_command
+
 
 class Say(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="say", description="allows the bot to say things")
+
+    say_name: str = create_command("say")
+    @app_commands.command(name=say_name, description="allows the bot to say things")
     @app_commands.choices()
     async def say(self, interaction: discord.Interaction, say: str):
         if not interaction.user.guild_permissions.administrator:

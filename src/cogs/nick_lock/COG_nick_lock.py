@@ -4,7 +4,7 @@ from discord import app_commands
 from src.cogs.nick_lock.nickuser import NickUser
 from src.cogs.nick_lock.guild import Guild
 from src.cogs.defaults import *
-from src.cogs.bot_library import respond_message,edit_message
+from src.cogs.bot_library import respond_message, edit_message, create_command
 from typing import Literal
 import logging
 
@@ -51,8 +51,8 @@ class NickLock(commands.Cog):
             return
         return
 
-
-    @app_commands.command(name="force_nick",
+    force_nick_name: str = create_command("force nick")
+    @app_commands.command(name=force_nick_name,
                       description="Allows you to force a user with permission to change nick to have a specific name")
     @app_commands.choices()
     @commands.has_permissions(manage_nicknames=True)
@@ -106,7 +106,9 @@ class NickLock(commands.Cog):
         else:
             await edit_message(edit="Existing Nickname lock edited", message=message)
 
-    @app_commands.command(name="remove_nick_lock", description="Allows you remove a locked nickname")
+
+    remove_nick_lock_name: str = create_command("remove nick lock")
+    @app_commands.command(name=remove_nick_lock_name, description="Allows you remove a locked nickname")
     @app_commands.choices()
     async def remove_lock_nick(self, interaction: discord.Interaction, username: discord.Member):
         if not interaction.user.guild_permissions.administrator:
@@ -134,7 +136,9 @@ class NickLock(commands.Cog):
         current_guild.user_nicks.pop(username.id)
         await edit_message(edit="Done", message=message)
 
-    @app_commands.command(name="settings", description="Change settings for server")
+
+    settings_name: str = create_command("settings")
+    @app_commands.command(name=settings_name, description="Change settings for server")
     @commands.has_permissions(administrator=True)
     async def change_settings(self, interaction: discord.Interaction, toggle: Literal["Enable", "Disable"],
                               setting_change: Literal["Nick Lock"]):
