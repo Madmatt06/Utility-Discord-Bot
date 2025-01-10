@@ -42,5 +42,12 @@ async def send_message(message: str, channel: discord.Interaction.channel, view:
         else:
             await channel.send(content=message, view=view)
 
+
+def create_text(text:str) -> str:
+    if settings.PREFIX:
+            return f"{settings.PREFIX} ({text})"
+    else:
+        return text
+
 def create_command(command: str) -> str:
     return command.replace(" ", settings.COMMAND_SEPERATOR)

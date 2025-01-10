@@ -2,7 +2,7 @@ import discord
 from discord import app_commands, Interaction
 from discord.ext import commands
 
-from src.cogs.bot_library import create_command, respond_message, edit_message
+from src.cogs.bot_library import create_command, respond_message, edit_message, create_text
 from src.cogs.staff_notify import COG_staff_notify
 
 class Buttons(discord.ui.View):
@@ -36,19 +36,36 @@ class Buttons(discord.ui.View):
         print(f"Getting message with guild \"{guild_id}\", Channel \"{channel_id}\", and message id \"{message_id}\"")
         channel: discord.TextChannel = self.bot.get_channel(int(channel_id))
         message_to_pin: discord.Message = await channel.fetch_message(int(message_id))
-        await message_to_pin.pin()
-        await edit_message(edit=f"Message Pinned! {repeat_message_link}", message=interaction.message)
+        try:
+            await message_to_pin.pin(reason=create_text("Pin request accepted"))
+        except discord.errors.HTTPException as error:
+            print(f"Recieved error when attempting to pin {error.code} with explanation {await error.response.text()}")
+            if error.code == 50021:
+                button.disabled = True
+                await edit_message(edit="I could not pin this message", message=interaction.message, view=self)
+                await interaction.response.defer()
+                return
+            await edit_message(edit="Something went wrong", message=interaction.message)
+            await interaction.response.defer()
+            return
+        self.clear_items()
+        await edit_message(edit=f"Message Pinned! {repeat_message_link}", message=interaction.message, view=self)
         await interaction.response.defer()
     @discord.ui.button(label="Decline Request",style=discord.ButtonStyle.danger)
     async def decline_button(self, interaction:discord.Interaction, button:discord.ui.Button):
+        repeat_message_link:str = ""
         target_message: str = interaction.message.content
         print(f"Extracting discord message link \"{target_message}\"")
         starter = "https://discord.com/channels/"
         starting_id: int = target_message.find(starter)
-        repeat_message_link: str = target_message[starting_id:]
-        if repeat_message_link.endswith(")"):
-            repeat_message_link = repeat_message_link[:-1]
-        await edit_message(edit=f"Pin request declined {repeat_message_link}", message=interaction.message)
+        if starting_id != -1:
+            repeat_message_link = target_message[starting_id:]
+            if repeat_message_link.endswith(")"):
+                repeat_message_link = repeat_message_link[:-1]
+        else:
+            print(f"No Message link was left in request. Repeat is {repeat_message_link}")
+        self.clear_items()
+        await edit_message(edit=f"Pin request declined {repeat_message_link}", message=interaction.message, view=self)
         await interaction.response.defer()
 
 
@@ -62,6 +79,7 @@ class Request_Pin(commands.Cog):
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
+    #TODO: Add a check to make sure user can't pin it themself, prevent spam, and auto deny requests on system messages (causes crash)
     async def request_pin(self, interaction: Interaction, message: discord.Message):
         staff_cog:COG_staff_notify = self.bot.get_cog("Staff")
         if staff_cog is None:
@@ -72,7 +90,7 @@ class Request_Pin(commands.Cog):
         if not sent:
             await respond_message(
                 message="The owner hasn't set up some features yet. Ask the server admins to setup a staff notification chat to use this command!",
-                interaction=interaction, ephemeral=False)
+                interaction=interaction, ephemeral=True)
             return
         await  respond_message(message="Request sent!", interaction=interaction, ephemeral=True)
 
