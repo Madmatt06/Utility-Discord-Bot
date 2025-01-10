@@ -161,6 +161,11 @@ class NickLock(commands.Cog):
                 "Nick Lock enabled. This is a less obvious administrative features and should not be used for fun without others permission (Should be last option for administrative purposes). Use them wisely.",
                 ephemeral=True)
 
+    async def cog_unload(self) -> None:
+        print("nick_lock is unloaded")
+        return await super().cog_unload()
+
+
 
 async def setup(bot):
     await bot.add_cog(NickLock(bot))
