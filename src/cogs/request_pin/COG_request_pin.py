@@ -70,7 +70,7 @@ class Buttons(discord.ui.View):
 
 
 
-class Request_Pin(commands.Cog):
+class RequestPin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.ctx_menu:app_commands.ContextMenu = app_commands.ContextMenu(name="Request Pin", callback=self.request_pin)
@@ -96,5 +96,5 @@ class Request_Pin(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Request_Pin(bot))
+    await bot.add_cog(RequestPin(bot))
     print("Request Pin is loaded")
