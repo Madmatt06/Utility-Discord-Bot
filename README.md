@@ -23,8 +23,6 @@ Picks a random HTTP code from a list and returns an image associated with the co
 
 ### [Say](../../tree/main/src/cogs/say)
 Allows the user to control what the bot says.
-This one needs its permissions looked over.
-It seems super wrong to give the server admins permissions to it but not the bot owner. (See Issue [#4](/../../issues/4))
 
 ### [Sync Tree](../../tree/main/src/cogs/sync_tree)
 Updates the list of bot commands.
