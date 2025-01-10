@@ -10,8 +10,7 @@ class SyncTree(commands.Cog):
         self.bot = bot
         self.last_sync:float = time.time()
 
-    sync_tree_name: str = create_command("sync")
-    @app_commands.command(name=sync_tree_name, description="Syncs the cogs with the guild. ONLY FOR ADMINS")
+    @app_commands.command(name=create_command("sync"), description="Syncs the cogs with the guild. ONLY FOR ADMINS")
     async def sync_tree(self, interaction: Interaction):
         if not interaction.user.guild_permissions.administrator and str(interaction.user.id) != settings.BOT_OWNER_ID:
             await respond_message(message=PERM_ERROR, interaction=interaction, ephemeral=True)

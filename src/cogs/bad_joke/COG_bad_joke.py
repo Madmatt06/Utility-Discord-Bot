@@ -9,8 +9,7 @@ class BadJoke(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    bad_joke_name: str = create_command("bad joke")
-    @app_commands.command(name=bad_joke_name, description="Get a bad joke!")
+    @app_commands.command(name=create_command("bad joke"), description="Get a bad joke!")
     async def bad_joke(self, interaction: discord.Interaction):
         headers = {'Accept': 'application/json'}
         response = requests.get(url= "https://icanhazdadjoke.com/", headers=headers)

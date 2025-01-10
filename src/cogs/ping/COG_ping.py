@@ -7,8 +7,7 @@ class Ping(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    ping_name: str = create_command("ping")
-    @app_commands.command(name=ping_name, description="allows you to test if the bot is functioning")
+    @app_commands.command(name=create_command("ping"), description="allows you to test if the bot is functioning")
     async def ping(self, interaction: Interaction):
         await respond_message(message="pong", interaction=interaction, ephemeral=True)
 

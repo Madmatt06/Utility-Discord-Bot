@@ -34,6 +34,26 @@ def run():
       elif MAX >= LEVEL and os.path.isdir(path):
         await load_cogs(path, LEVEL+1, LATE)
 
+  async def unload_cogs(PATH:str = "./cogs", LEVEL:int = 0):
+    MAX:int = 3
+    COG_PRE = "COG_"
+    PY_EXT = ".py"
+    for filename in os.listdir(PATH):
+      if filename.endswith(PY_EXT) and filename.startswith(COG_PRE):
+        cog_path = os.path.join(PATH, filename)
+        await unload_cog(cog_path)
+      elif MAX >= LEVEL:
+        new_path = os.path.join(PATH, filename)
+        if os.path.isdir(new_path):
+          await unload_cogs(new_path, LEVEL+1)
+
+  async def unload_cog(cog_path:str):
+    print(f"Unloading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
+    try:
+      await bot.unload_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
+    except:
+      print(f"failed to unload {cog_path}. Was it ever even loaded?")
+
   async def main():
     async with bot:
       print("Loading first cogs")
@@ -48,17 +68,16 @@ def run():
     print(f"Bot ID: {bot.user.id}")
     print("--------------------------------------")
 
-  stop_name: str = create_command("stop")
-  @bot.tree.command(name=stop_name, description="Shutdown the bot")
+  @bot.tree.command(name=create_command("stop"), description="Shutdown the bot")
   async def stop(interaction:discord.Interaction):
     if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
       await respond_message(message="Hey! you can't do that!",interaction=interaction, ephemeral=False)
       return
     print(interaction.user.id)
     await respond_message(message="Shutting down...",interaction=interaction, ephemeral=True)
+    await unload_cogs()
     await bot.close()
     print("Bot has shutdown.")
-    sys.exit()
 
   logger = logging.getLogger('discord')
   logger.setLevel(logging.DEBUG)

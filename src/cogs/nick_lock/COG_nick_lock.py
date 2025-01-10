@@ -5,6 +5,7 @@ from src.cogs.nick_lock.nickuser import NickUser
 from src.cogs.nick_lock.guild import Guild
 from src.cogs.defaults import *
 from src.cogs.bot_library import respond_message, edit_message, create_command
+from typing import Literal
 import logging
 
 
@@ -121,9 +122,9 @@ class NickLock(commands.Cog):
         current_guild: Guild = self.guilds[guild_id]
 
         # Checks server settings
-        #if not current_guild.enabled:
-        #    await settings_denial(interaction=interaction)
-        #    return
+        if not current_guild.enabled:
+            await settings_denial(interaction=interaction)
+            return
 
         await respond_message(message="Removing...", interaction=interaction, ephemeral=True)
         message = await interaction.original_response()
