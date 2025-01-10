@@ -21,11 +21,12 @@ class Staff(commands.Cog):
         await respond_message(message="Channel set!", interaction=interaction, ephemeral=True)
 
 
-    async def notify_staff(self, guild_id:int, message:str) -> bool:
+    async def notify_staff(self, guild_id:int, message:str, view:discord.ui.View=None) -> bool:
         if not guild_id in self.guilds_saved:
             return False
         notify_channel:discord.Interaction.channel = self.bot.get_channel(self.guilds_saved[guild_id])
-        await send_message(message=message, channel=notify_channel)
+        await send_message(message=message, channel=notify_channel, view=view)
+        return True
 
 
 async def setup(bot):
