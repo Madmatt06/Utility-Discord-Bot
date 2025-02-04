@@ -56,6 +56,10 @@ class NickLock(commands.Cog):
     @app_commands.choices()
     @commands.has_permissions(manage_nicknames=True)
     async def force_nick(self, interaction: discord.Interaction, username: discord.Member, nick: str):
+        """Adds a nick lock to a user on a guild
+
+        Checks if the user performing the action has the proper permissions and if the server has nick lock enabled. The function then tries to edit the name and then saves the nick name for the user in the guild. 
+        """
 
         # TODO: Check that this is correct permission checking. Looks very strange
         # Permission checks
@@ -87,6 +91,7 @@ class NickLock(commands.Cog):
 
         is_edited = username.id in current_guild.user_nicks
 
+        # TODO: Fix to try editing nickname before adding to dictionary.
         current_guild.user_nicks[username.id] = NickUser(username.id, nick)
 
         try:
