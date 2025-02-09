@@ -2,16 +2,19 @@ import discord
 from discord.ext import commands
 from discord import app_commands,Interaction
 from src.cogs.bot_library import respond_message, create_command
+from src.cogs.tic_tac_toe.game import Game
 
 
 class TicTacToe(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.guilds:dict[int,dict[int,Game]] = {}
 
     tic_tac_toe = app_commands.Group(name=create_command("tic tac toe"), description="All commands for tic tac toe games")
     @tic_tac_toe.command(name=create_command("start"), description="Allows you to start a game against someone")
     async def start(self, interaction: Interaction, opponent: discord.Member):
         await respond_message(message=f"Starting game against opponent {opponent.name}", interaction=interaction, ephemeral=True)
+        if not interaction.guild_id in self.guilds
 
     @tic_tac_toe.command(name=create_command("resume"), description="Allows you to resume a game if the last game interaction has expired")
     async def resume(self, interaction: Interaction):
