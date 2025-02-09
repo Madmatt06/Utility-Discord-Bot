@@ -14,7 +14,7 @@ class TicTacToe(commands.Cog):
     @tic_tac_toe.command(name=create_command("start"), description="Allows you to start a game against someone")
     async def start(self, interaction: Interaction, opponent: discord.Member):
         await respond_message(message=f"Starting game against opponent {opponent.name}", interaction=interaction, ephemeral=True)
-        if not interaction.guild_id in self.guilds
+        
 
     @tic_tac_toe.command(name=create_command("resume"), description="Allows you to resume a game if the last game interaction has expired")
     async def resume(self, interaction: Interaction):
