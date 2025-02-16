@@ -75,11 +75,23 @@ def run():
     await bot.close()
     print("Bot has shutdown.")
 
+  logs_path = "../saves/discord.log"
   logger = logging.getLogger('discord')
   logger.setLevel(logging.DEBUG)
-  handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-  handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-  logger.addHandler(handler)
+  if not os.path.isdir('../saves'):
+    try:
+      os.makedirs('../saves')
+    except PermissionError:
+      print('Permission Error. Unable to create saves directory')
+  try:
+    handler = logging.FileHandler(filename=logs_path, encoding='utf-8', mode='w')
+    handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+    logger.addHandler(handler)
+  except FileNotFoundError:
+    print('Saves directory not found. logs unavailable')
+  except PermissionError:
+    print('Permission Error. Unable to write log file. Logs unavaliable')
+
   asyncio.run(main())
 
 if __name__ == "__main__":
