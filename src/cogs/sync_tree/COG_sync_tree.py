@@ -1,3 +1,4 @@
+import discord.ext.commands
 from discord.ext import commands
 from discord import app_commands,Interaction
 from src.cogs.defaults import *
@@ -29,6 +30,20 @@ class SyncTree(commands.Cog):
     await edit_message(edit='Done', message=message)
     self.last_sync = time.time()
 
+  @commands.command()
+  async def sync(self, ctx: discord.ext.commands.Context):
+    if not ctx.message.author.guild_permissions.administrator and str(ctx.message.author.id) != settings.BOT_OWNER_ID:
+      await ctx.channel.send(content=PERM_ERROR)
+      return
+
+    if (time.time() - self.last_sync) < 30:
+      await ctx.channel.send(content='sync tree unavailable. Please wait at least 30 seconds between sync_tree calls.')
+      return
+
+    await self.bot.tree.sync()
+    print('Command tree synced.')
+    await ctx.channel.send(content='Synced')
+    self.last_sync = time.time()
 
 async def setup(bot):
   await bot.add_cog(SyncTree(bot))
