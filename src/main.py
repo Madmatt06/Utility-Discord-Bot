@@ -14,14 +14,14 @@ def run():
   intents = discord.Intents.default()
   intents.message_content = True
   intents.members = True
-  bot = commands.Bot(command_prefix='#', intents = intents)
+  bot = commands.Bot(command_prefix='#', intents=intents)
 
-  async def load_cog(cog_path:str):
+  async def load_cog(cog_path: str):
     print(f'Loading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}')
     await bot.load_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
 
-  async def load_cogs(PATH:str = './cogs', LEVEL:int = 0):
-    MAX:int = 3
+  async def load_cogs(PATH: str = './cogs', LEVEL: int = 0):
+    MAX: int = 3
     COG_PRE = 'COG_'
     PY_EXT = '.py'
     for filename in os.listdir(PATH):
@@ -31,10 +31,10 @@ def run():
       elif MAX >= LEVEL:
         new_path = os.path.join(PATH, filename)
         if os.path.isdir(new_path):
-          await load_cogs(new_path, LEVEL+1)
+          await load_cogs(new_path, LEVEL + 1)
 
-  async def unload_cogs(PATH:str = './cogs', LEVEL:int = 0):
-    MAX:int = 3
+  async def unload_cogs(PATH: str = './cogs', LEVEL: int = 0):
+    MAX: int = 3
     COG_PRE = 'COG_'
     PY_EXT = '.py'
     for filename in os.listdir(PATH):
@@ -44,9 +44,9 @@ def run():
       elif MAX >= LEVEL:
         new_path = os.path.join(PATH, filename)
         if os.path.isdir(new_path):
-          await unload_cogs(new_path, LEVEL+1)
+          await unload_cogs(new_path, LEVEL + 1)
 
-  async def unload_cog(cog_path:str):
+  async def unload_cog(cog_path: str):
     print(f'Unloading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}')
     try:
       await bot.unload_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
@@ -65,12 +65,12 @@ def run():
     print('--------------------------------------')
 
   @bot.tree.command(name=create_command('stop'), description='Shutdown the bot')
-  async def stop(interaction:discord.Interaction):
+  async def stop(interaction: discord.Interaction):
     if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
-      await respond_message(message='Hey! you can\'t do that!',interaction=interaction, ephemeral=False)
+      await respond_message(message='Hey! you can\'t do that!', interaction=interaction, ephemeral=False)
       return
     print(interaction.user.id)
-    await respond_message(message='Shutting down...',interaction=interaction, ephemeral=True)
+    await respond_message(message='Shutting down...', interaction=interaction, ephemeral=True)
     await unload_cogs()
     await bot.close()
     print('Bot has shutdown.')
@@ -93,6 +93,7 @@ def run():
     print('Permission Error. Unable to write log file. Logs unavailable')
 
   asyncio.run(main())
+
 
 if __name__ == '__main__':
   run()

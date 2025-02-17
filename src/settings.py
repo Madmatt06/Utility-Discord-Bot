@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-# Loads all the neccesary settings from .env
+# Loads all the necessary settings from .env
 
 load_dotenv()
 
