@@ -15,15 +15,16 @@ class Cat(commands.Cog):
     @app_commands.command(name=create_command("cat"), description="Generates a cat")
     async def cat(self, interaction: discord.Interaction):
         # Gets a cat image and saves it to a BytesIO object. Then sends it.
-        img_data = requests.get("https://genrandom.com/api/cat").content
+        img_data = requests.get('https://genrandom.com/api/cat').content
         image_simul_file = BytesIO(img_data)
         image_file = discord.File(image_simul_file)
-        image_file.filename = "cat.png"
-        image_file.description = "A random cat picture!"
+        image_file.filename = 'cat.png'
+        image_file.description = 'A random cat picture!'
         await interaction.response.send_message(file=image_file)
         image_simul_file.close()
+        image_file.close()
 
 
 async def setup(bot):
     await bot.add_cog(Cat(bot))
-    print("cat is loaded")
+    print('cat is loaded')

@@ -10,7 +10,7 @@ import logging
 
 
 async def settings_denial(interaction: discord.Interaction):
-    await respond_message(message="Sorry, this command is disabled for this server", interaction=interaction,
+    await respond_message(message='Sorry, this command is disabled for this server', interaction=interaction,
                           ephemeral=True)
 
 
@@ -20,9 +20,9 @@ class NickLock(commands.Cog):
         self.guilds: dict[int, Guild] = {}
 
     def add_guild(self, guild_id: int):
-        print("Adding new guild, " + str(guild_id))
+        print('Adding new guild, ' + str(guild_id))
         if guild_id in self.guilds:
-            print("ERROR: Guild already exists. \"" + str(guild_id) + "\"")
+            print('ERROR: Guild already exists. "' + str(guild_id) + '"')
             return
         self.guilds[guild_id] = Guild(guild_id)
         print(self.guilds.keys())
@@ -51,8 +51,8 @@ class NickLock(commands.Cog):
             return
         return
 
-    @app_commands.command(name=create_command("force nick"),
-                      description="Allows you to force a user with permission to change nick to have a specific name")
+    @app_commands.command(name=create_command('force nick'),
+                      description='Allows you to force a user with permission to change nick to have a specific name')
     @app_commands.choices()
     @commands.has_permissions(manage_nicknames=True)
     async def force_nick(self, interaction: discord.Interaction, username: discord.Member, nick: str):
@@ -85,7 +85,7 @@ class NickLock(commands.Cog):
             await settings_denial(interaction=interaction)
             return
 
-        await respond_message(message="Editing name", interaction=interaction, ephemeral=True)
+        await respond_message(message='Editing name', interaction=interaction, ephemeral=True)
 
         message = await interaction.original_response()
 
@@ -97,21 +97,21 @@ class NickLock(commands.Cog):
         try:
             await username.edit(nick=nick)
         except discord.errors.Forbidden:
-            await edit_message(edit="Looks like I don't have permissions to do that!", message=message)
+            await edit_message(edit='Looks like I don\'t have permissions to do that!', message=message)
             return
         except Exception as bot_error:
             # Keeps User informed something happened and raises error to make debugging easier
-            await edit_message(edit="Sorry, I can't do that right now. Try again later.", message=message)
+            await edit_message(edit='Sorry, I can\'t do that right now. Try again later.', message=message)
             logging.error(bot_error)
             raise
 
         if not is_edited:
-            await edit_message(edit="Nickname lock set", message=message)
+            await edit_message(edit='Nickname lock set', message=message)
         else:
-            await edit_message(edit="Existing Nickname lock edited", message=message)
+            await edit_message(edit='Existing Nickname lock edited', message=message)
 
 
-    @app_commands.command(name=create_command("remove nick lock"), description="Allows you remove a locked nickname")
+    @app_commands.command(name=create_command('remove nick lock'), description='Allows you remove a locked nickname')
     @app_commands.choices()
     async def remove_lock_nick(self, interaction: discord.Interaction, username: discord.Member):
         if not interaction.user.guild_permissions.administrator:
@@ -129,24 +129,24 @@ class NickLock(commands.Cog):
             await settings_denial(interaction=interaction)
             return
 
-        await respond_message(message="Removing...", interaction=interaction, ephemeral=True)
+        await respond_message(message='Removing...', interaction=interaction, ephemeral=True)
         message = await interaction.original_response()
 
         if not username.id in current_guild.user_nicks:
-            await edit_message(edit="No Locks found for user", message=message)
+            await edit_message(edit='No Locks found for user', message=message)
             return
 
         current_guild.user_nicks.pop(username.id)
-        await edit_message(edit="Done", message=message)
+        await edit_message(edit='Done', message=message)
 
 
-    settings_name: str = create_command("settings")
-    @app_commands.command(name=settings_name, description="Change settings for server")
+    settings_name: str = create_command('settings')
+    @app_commands.command(name=settings_name, description='Change settings for server')
     @commands.has_permissions(administrator=True)
-    async def change_settings(self, interaction: discord.Interaction, toggle: Literal["Enable", "Disable"],
+    async def change_settings(self, interaction: discord.Interaction, toggle: Literal['Enable', 'Disable'],
                               setting_change: Literal["Nick Lock"]):
         if not interaction.user.guild_permissions.administrator:
-            await respond_message(message="Hey! you can't do that!", interaction=interaction, ephemeral=False)
+            await respond_message(message='Hey! you can\'t do that!', interaction=interaction, ephemeral=False)
             return
 
         guild_id = interaction.guild_id
@@ -156,22 +156,22 @@ class NickLock(commands.Cog):
         current_guild: Guild = self.guilds[guild_id]
 
         action = False
-        if toggle == "Enable":
+        if toggle == 'Enable':
             action = True
 
-        if setting_change == "Nick Lock":
+        if setting_change == 'Nick Lock':
             # This setting is a bit more sketchy. Prefix setting will be ignored.
             current_guild.enabled = bool(action)
             await interaction.response.send_message(
-                "Nick Lock enabled. This is a less obvious administrative features and should not be used for fun without others permission (Should be last option for administrative purposes). Use them wisely.",
+                'Nick Lock enabled.',
                 ephemeral=True)
 
     async def cog_unload(self) -> None:
-        print("nick_lock is unloaded")
+        print('nick_lock is unloaded')
         return await super().cog_unload()
 
 
 
 async def setup(bot):
     await bot.add_cog(NickLock(bot))
-    print("nick_lock is loaded")
+    print('nick_lock is loaded')

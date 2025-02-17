@@ -9,22 +9,22 @@ class Say(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    if SAY_PERMS != "4":
-        @app_commands.command(name=create_command("say"), description="allows the bot to say things")
+    if SAY_PERMS != '4':
+        @app_commands.command(name=create_command('say'), description='allows the bot to say things')
         @app_commands.choices()
         async def say(self, interaction: discord.Interaction, say: str):
-            if interaction.user.id != int(BOT_OWNER_ID) and SAY_PERMS == "0":
+            if interaction.user.id != int(BOT_OWNER_ID) and SAY_PERMS == '0':
                 return
-            if not interaction.user.guild_permissions.administrator and SAY_PERMS == "1":
+            if not interaction.user.guild_permissions.administrator and SAY_PERMS == '1':
                 return
             if interaction.user.id != int(BOT_OWNER_ID) and not interaction.user.guild_permissions.administrator and SAY_PERMS == "2":
                 return
             if SAY_PERMS == "3":
-                print(f"WARNING: Permissions are very broad for say command and bot will say anything it is told to. Consider lowering the permission levels. Currently saying \"{say}\"")
+                print(f'WARNING: Permissions are very broad for say command and bot will say anything it is told to. Consider lowering the permission levels. Currently saying \"{say}\"')
             await send_message(message=say, channel=interaction.channel)
             await respond_message(message="Done", interaction=interaction, ephemeral=True)
 
 
 async def setup(bot):
     await bot.add_cog(Say(bot))
-    print("say is loaded")
+    print('say is loaded')

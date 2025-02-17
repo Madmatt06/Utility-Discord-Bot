@@ -14,16 +14,16 @@ def run():
   intents = discord.Intents.default()
   intents.message_content = True
   intents.members = True
-  bot = commands.Bot(command_prefix="#", intents = intents)
+  bot = commands.Bot(command_prefix='#', intents = intents)
 
   async def load_cog(cog_path:str):
-    print(f"Loading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
+    print(f'Loading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}')
     await bot.load_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
 
-  async def load_cogs(PATH:str = "./cogs", LEVEL:int = 0):
+  async def load_cogs(PATH:str = './cogs', LEVEL:int = 0):
     MAX:int = 3
-    COG_PRE = "COG_"
-    PY_EXT = ".py"
+    COG_PRE = 'COG_'
+    PY_EXT = '.py'
     for filename in os.listdir(PATH):
       if filename.endswith(PY_EXT) and filename.startswith(COG_PRE):
         cog_path = os.path.join(PATH, filename)
@@ -33,10 +33,10 @@ def run():
         if os.path.isdir(new_path):
           await load_cogs(new_path, LEVEL+1)
 
-  async def unload_cogs(PATH:str = "./cogs", LEVEL:int = 0):
+  async def unload_cogs(PATH:str = './cogs', LEVEL:int = 0):
     MAX:int = 3
-    COG_PRE = "COG_"
-    PY_EXT = ".py"
+    COG_PRE = 'COG_'
+    PY_EXT = '.py'
     for filename in os.listdir(PATH):
       if filename.endswith(PY_EXT) and filename.startswith(COG_PRE):
         cog_path = os.path.join(PATH, filename)
@@ -47,11 +47,11 @@ def run():
           await unload_cogs(new_path, LEVEL+1)
 
   async def unload_cog(cog_path:str):
-    print(f"Unloading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}")
+    print(f'Unloading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}')
     try:
       await bot.unload_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
     except:
-      print(f"failed to unload {cog_path}. Was it ever even loaded?")
+      print(f'failed to unload {cog_path}. Was it ever even loaded?')
 
   async def main():
     async with bot:
@@ -60,22 +60,22 @@ def run():
 
   @bot.event
   async def on_ready():
-    print(f"Bot Name: {bot.user}")
-    print(f"Bot ID: {bot.user.id}")
-    print("--------------------------------------")
+    print(f'Bot Name: {bot.user}')
+    print(f'Bot ID: {bot.user.id}')
+    print('--------------------------------------')
 
-  @bot.tree.command(name=create_command("stop"), description="Shutdown the bot")
+  @bot.tree.command(name=create_command('stop'), description='Shutdown the bot')
   async def stop(interaction:discord.Interaction):
     if not interaction.user.guild_permissions.administrator and settings.BOT_OWNER_ID != str(interaction.user.id):
-      await respond_message(message="Hey! you can't do that!",interaction=interaction, ephemeral=False)
+      await respond_message(message='Hey! you can\'t do that!',interaction=interaction, ephemeral=False)
       return
     print(interaction.user.id)
-    await respond_message(message="Shutting down...",interaction=interaction, ephemeral=True)
+    await respond_message(message='Shutting down...',interaction=interaction, ephemeral=True)
     await unload_cogs()
     await bot.close()
-    print("Bot has shutdown.")
+    print('Bot has shutdown.')
 
-  logs_path = "../saves/discord.log"
+  logs_path = '../saves/discord.log'
   logger = logging.getLogger('discord')
   logger.setLevel(logging.DEBUG)
   if not os.path.isdir('../saves'):
@@ -90,9 +90,9 @@ def run():
   except FileNotFoundError:
     print('Saves directory not found. logs unavailable')
   except PermissionError:
-    print('Permission Error. Unable to write log file. Logs unavaliable')
+    print('Permission Error. Unable to write log file. Logs unavailable')
 
   asyncio.run(main())
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   run()
