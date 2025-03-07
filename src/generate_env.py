@@ -8,6 +8,7 @@ if __name__ == '__main__':
   PREFIX_MESSAGE:str = ''
   SAY_PERMS:str = '0'
   COMMAND_SEPERATOR = '_'
+  LOG_FILE = 'false'
   answer = input('Would you like to set the enviroment keys now? (y/n) ')
   if answer.lower() == 'y' or answer.lower() == 'yes':
     DISCORD_API_TOKEN = input('Please type your bot token: ')
@@ -23,6 +24,11 @@ if __name__ == '__main__':
         print('Unknown value entered. Using default')
     except:
       print('Unknown value entered. Using default')
+    do_log_file = input('Do you want to log to a file? (This will disable most of the console output) (y/N): ')
+    if do_log_file == 'y':
+      LOG_FILE = 'true'
+    else:
+      LOG_FILE = 'false'
 
 
   dotenv.set_key('.env', 'DISCORD_API_TOKEN', DISCORD_API_TOKEN)
@@ -30,3 +36,4 @@ if __name__ == '__main__':
   dotenv.set_key('.env', 'PREFIX_MESSAGE', PREFIX_MESSAGE)
   dotenv.set_key('.env', 'COMMAND_SEPERATOR', COMMAND_SEPERATOR)
   dotenv.set_key('.env', 'SAY_PERMS', SAY_PERMS)
+  dotenv.set_key('.env', 'LOG_FILE', LOG_FILE)

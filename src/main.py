@@ -47,9 +47,10 @@ def run():
           await unload_cogs(new_path, LEVEL + 1)
 
   async def unload_cog(cog_path: str):
-    print(f'Unloading {cog_path[2:-3].replace('/', '.').replace('\\', '.')}')
+    python_path = cog_path[2:-3].replace('/', '.').replace('\\', '.')
+    print(f'Unloading {python_path}')
     try:
-      await bot.unload_extension(cog_path[2:-3].replace('/', '.').replace('\\', '.'))
+      await bot.unload_extension(python_path)
     except:
       print(f'failed to unload {cog_path}. Was it ever even loaded?')
 
@@ -77,20 +78,30 @@ def run():
 
   logs_path = '../saves/discord.log'
   logger = logging.getLogger('discord')
-  logger.setLevel(logging.DEBUG)
+  if settings.LOG_LEVEL == '3':
+    logger.setLevel(logging.DEBUG)
+  elif settings.LOG_FILE == '2':
+    logger.setLevel(logging.INFO)
+  else:
+    logger.setLevel(logging.CRITICAL)
   if not os.path.isdir('../saves'):
     try:
       os.makedirs('../saves')
     except PermissionError:
       print('Permission Error. Unable to create saves directory')
-  try:
-    handler = logging.FileHandler(filename=logs_path, encoding='utf-8', mode='w')
+  if settings.LOG_FILE == 'true':
+    try:
+      handler = logging.FileHandler(filename=logs_path, encoding='utf-8', mode='w')
+      handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+      logger.addHandler(handler)
+    except FileNotFoundError:
+      print('Saves directory not found. logs unavailable')
+    except PermissionError:
+      print('Permission Error. Unable to write log file. Logs unavailable')
+  else:
+    handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
     logger.addHandler(handler)
-  except FileNotFoundError:
-    print('Saves directory not found. logs unavailable')
-  except PermissionError:
-    print('Permission Error. Unable to write log file. Logs unavailable')
 
   asyncio.run(main())
 

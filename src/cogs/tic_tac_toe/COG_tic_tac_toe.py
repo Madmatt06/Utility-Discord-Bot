@@ -22,8 +22,8 @@ class TicTacToe(commands.Cog):
       self.guilds[current_guild] = {}
     host_id: int = interaction.user.id
     if host_id in self.guilds[current_guild]:
-      await edit_message(edit=f'You are already the host of a game against {interaction.guild.get_member(self.guilds
-[current_guild][host_id].opponent_id).mention}', message=message)
+      existing_opponent = interaction.guild.get_member(self.guilds[current_guild][host_id].opponent_id).mention
+      await edit_message(edit=f'You are already the host of a game against {existing_opponent}', message=message)
       return
     self.guilds[current_guild][host_id] = Game(host_id=host_id, opponent_id=opponent.id)
     print(self.guilds)
