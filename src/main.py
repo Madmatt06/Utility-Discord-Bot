@@ -76,7 +76,7 @@ def run():
     await bot.close()
     print('Bot has shutdown.')
 
-  logs_path = '../saves/discord.log'
+  logs_path = f'{SAVE_PATH}/discord.log'
   logger = logging.getLogger('discord')
   if settings.LOG_LEVEL == '3':
     logger.setLevel(logging.DEBUG)
@@ -84,9 +84,9 @@ def run():
     logger.setLevel(logging.INFO)
   else:
     logger.setLevel(logging.CRITICAL)
-  if not os.path.isdir('../saves'):
+  if not os.path.isdir(SAVE_PATH):
     try:
-      os.makedirs('../saves')
+      os.makedirs(SAVE_PATH)
     except PermissionError:
       print('Permission Error. Unable to create saves directory')
   if settings.LOG_FILE == 'true':
