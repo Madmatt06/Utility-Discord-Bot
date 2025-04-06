@@ -8,6 +8,7 @@ import asyncio
 import logging
 
 from src.cogs.bot_library import create_command
+from src.cogs.defaults import SAVE_PATH
 
 
 def run():
