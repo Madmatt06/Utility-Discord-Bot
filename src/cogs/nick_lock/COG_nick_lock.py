@@ -19,6 +19,8 @@ class NickLock(commands.Cog):
     self.bot = bot
     self.guilds: dict[int, Guild] = {}
 
+  nick_lock = app_commands.Group(name=create_command('nick lock'), description='All commands for nick lock')
+
   def add_guild(self, guild_id: int):
     print('Adding new guild, ' + str(guild_id))
     if guild_id in self.guilds:
@@ -51,8 +53,8 @@ class NickLock(commands.Cog):
       return
     return
 
-  @app_commands.command(name=create_command('force nick'),
-                        description='Allows you to force a user with permission to change nick to have a specific name')
+  @nick_lock.command(name=create_command('set'),
+                     description="Changes the nickname of a user and prevents the user from changing it")
   @app_commands.choices()
   @commands.has_permissions(manage_nicknames=True)
   async def force_nick(self, interaction: discord.Interaction, username: discord.Member, nick: str):
@@ -112,7 +114,7 @@ class NickLock(commands.Cog):
       await edit_message(edit='Existing Nickname lock edited', message=message)
 
 
-  @app_commands.command(name=create_command('remove nick lock'), description='Allows you remove a locked nickname')
+  @nick_lock.command(name=create_command('remove'), description='Allows the user to change their nickname')
   @app_commands.choices()
   async def remove_lock_nick(self, interaction: discord.Interaction, username: discord.Member):
     if not interaction.user.guild_permissions.administrator:
@@ -141,8 +143,7 @@ class NickLock(commands.Cog):
     await edit_message(edit='Done', message=message)
 
 
-  settings_name: str = create_command('settings')
-  @app_commands.command(name=settings_name, description='Change settings for server')
+  @app_commands.command(name=create_command('settings'), description='Change settings for server')
   @commands.has_permissions(administrator=True)
   async def change_settings(self, interaction: discord.Interaction, toggle: Literal['Enable', 'Disable'],
                             setting_change: Literal["Nick Lock"]):
