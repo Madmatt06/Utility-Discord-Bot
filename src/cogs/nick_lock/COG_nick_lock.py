@@ -9,17 +9,12 @@ from typing import Literal
 import logging
 
 
-async def settings_denial(interaction: discord.Interaction):
-  await respond_message(message='Sorry, this command is disabled for this server', interaction=interaction,
-                        ephemeral=True)
-
-
 class NickLock(commands.Cog):
   def __init__(self, bot):
     self.bot = bot
     self.guilds: dict[int, Guild] = {}
 
-  nick_lock = app_commands.Group(name=create_command('nick lock'), description='All commands for nick lock')
+  nick_lock = app_commands.Group(name=create_command('nick lock'), description='All commands for nick lock', default_permissions=discord.Permissions(manage_nicknames=True))
 
   def add_guild(self, guild_id: int):
     print('Adding new guild, ' + str(guild_id))
@@ -53,27 +48,17 @@ class NickLock(commands.Cog):
       return
     return
 
+
+
   @nick_lock.command(name=create_command('set'),
                      description="Changes the nickname of a user and prevents the user from changing it")
   @app_commands.choices()
-  @commands.has_permissions(manage_nicknames=True)
   async def force_nick(self, interaction: discord.Interaction, username: discord.Member, nick: str):
     """Adds a nick lock to a user on a guild
 
     Checks if the user performing the action has the proper permissions and if the server has nick lock enabled.
-    The function then tries to edit the name and then saves the nick name for the user in the guild.
+    The function then tries to edit the name and then saves the nickname for the user in the guild.
     """
-
-    # TODO: Check that this is correct permission checking. Looks very strange
-    # Permission checks
-    if not interaction.user.guild_permissions.manage_nicknames:
-      await respond_message(message=PERM_ERROR, interaction=interaction, ephemeral=True)
-      return
-    if not interaction.user.guild_permissions.administrator:
-      await respond_message(message=PERM_ERROR, interaction=interaction, ephemeral=True)
-      return
-
-    # Runs if user has permission
 
     guild_id: int = interaction.guild_id
 
@@ -84,9 +69,6 @@ class NickLock(commands.Cog):
     current_guild: Guild = self.guilds[guild_id]
 
     print(guild_id)
-    if not current_guild.enabled:
-      await settings_denial(interaction=interaction)
-      return
 
     await respond_message(message='Editing name', interaction=interaction, ephemeral=True)
 
@@ -117,20 +99,12 @@ class NickLock(commands.Cog):
   @nick_lock.command(name=create_command('remove'), description='Allows the user to change their nickname')
   @app_commands.choices()
   async def remove_lock_nick(self, interaction: discord.Interaction, username: discord.Member):
-    if not interaction.user.guild_permissions.administrator:
-      await respond_message(message=PERM_ERROR, interaction=interaction, ephemeral=True)
-      return
 
     guild_id: int = interaction.guild_id
     if not guild_id in self.guilds:
       self.add_guild(guild_id)
 
     current_guild: Guild = self.guilds[guild_id]
-
-    # Checks server settings
-    if not current_guild.enabled:
-      await settings_denial(interaction=interaction)
-      return
 
     await respond_message(message='Removing...', interaction=interaction, ephemeral=True)
     message = await interaction.original_response()
@@ -142,31 +116,6 @@ class NickLock(commands.Cog):
     current_guild.user_nicks.pop(username.id)
     await edit_message(edit='Done', message=message)
 
-
-  @app_commands.command(name=create_command('settings'), description='Change settings for server')
-  @commands.has_permissions(administrator=True)
-  async def change_settings(self, interaction: discord.Interaction, toggle: Literal['Enable', 'Disable'],
-                            setting_change: Literal["Nick Lock"]):
-    if not interaction.user.guild_permissions.administrator:
-      await respond_message(message='Hey! you can\'t do that!', interaction=interaction, ephemeral=False)
-      return
-
-    guild_id = interaction.guild_id
-    if not guild_id in self.guilds:
-      self.add_guild(guild_id)
-
-    current_guild: Guild = self.guilds[guild_id]
-
-    action = False
-    if toggle == 'Enable':
-      action = True
-
-    if setting_change == 'Nick Lock':
-      # This setting is a bit more sketchy. Prefix setting will be ignored.
-      current_guild.enabled = bool(action)
-      await interaction.response.send_message(
-        'Nick Lock enabled.',
-        ephemeral=True)
 
   async def cog_unload(self) -> None:
     print('nick_lock is unloaded')
