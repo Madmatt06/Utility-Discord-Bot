@@ -10,7 +10,7 @@ class Game:
       opponent_id     The user id of the opponent for the game
   """
   def __init__(self, host_id:int, opponent_id:int, board:[int] = None):
-    self.board: [int] = board if not board is None else [0] * 9
+    self.board: list[int] = board if not board is None else [0] * 9
     self.turn = False
     self.host_id = host_id
     self.opponent_id = opponent_id
@@ -78,6 +78,31 @@ class Game:
         return match
     return 0
 
+  def game_screen(self) -> tuple[int, str]:
+    screen:list[str] = []
+    option:int = 0
+    iteration:int = 1
+    turn:bool = True
+    screen.append(" ")
+    for tile in self.board:
+      screen.append(" ")
+      if tile == "":
+        if turn:
+          option += 1
+          screen.append(f"{option}")
+        else:
+          screen.append(" ")
+      else:
+        screen.append("X" if tile == 0 else "O")
+      if iteration % 3 == 0 and iteration != 9:
+        screen.append("\n -----------\n ")
+      elif iteration != 9:
+        screen.append(" |")
+      else:
+        screen.append("\n")
+      iteration += 1
+    return option, "".join(screen)
+
   def did_win(self) -> int:
     did_win:int = self.check_horizontal()
     did_win += self.check_vertical()
@@ -85,4 +110,5 @@ class Game:
     if did_win > 2 or did_win < 0:
       return -1
     return did_win
+
     

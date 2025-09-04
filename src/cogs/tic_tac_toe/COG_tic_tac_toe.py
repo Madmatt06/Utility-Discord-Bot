@@ -46,7 +46,6 @@ class TicTacToe(commands.Cog):
   async def get_games(self, interaction: Interaction):
     await respond_message(message=f'Getting game info', interaction=interaction, ephemeral=True)
 
-
 async def setup(bot):
   await bot.add_cog(TicTacToe(bot))
   print('Tic Tac Toe is loaded')
