@@ -9,7 +9,7 @@ class Game:
       host_id         The user id of the host of the game
       opponent_id     The user id of the opponent for the game
   """
-  def __init__(self, host_id:int, opponent_id:int, board:[int] = None):
+  def __init__(self, host_id:int, opponent_id:int, board:list[int] = None):
     self.board: list[int] = board if not board is None else [0] * 9
     self.turn = False
     self.host_id = host_id
@@ -28,7 +28,7 @@ class Game:
   def get_turn(self) -> int:
     return self.host_id if self.turn else self.opponent_id
 
-  def get_board(self) -> [int]:
+  def get_board(self) -> list[int]:
     return self.board.copy()
 
   def check_horizontal(self) -> int:
