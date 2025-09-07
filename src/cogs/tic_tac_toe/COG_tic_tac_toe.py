@@ -24,7 +24,8 @@ class TicTacToe(commands.Cog):
     host_id: int = interaction.user.id
     if host_id in self.guilds[current_guild]:
       existing_opponent = interaction.guild.get_member(self.guilds[current_guild][host_id].opponent_id).mention
-      await edit_message(edit=f'You are already the host of a game against {existing_opponent}', message=message)
+      await edit_message(message=f'You are already the host of a game against {existing_opponent}',
+                         original_response=message)
       return
     self.guilds[current_guild][host_id] = Game(host_id=host_id, opponent_id=opponent.id)
     _, screen = self.guilds[current_guild][host_id].game_screen()
@@ -44,7 +45,7 @@ class TicTacToe(commands.Cog):
       self.guilds[current_guild] = {}
     host_id: int = interaction.user.id
     if not host_id in self.guilds[current_guild]:
-      await edit_message(edit=f'You are not currently hosting any games in this server.', message=message)
+      await edit_message(message=f'You are not currently hosting any games in this server.', original_response=message)
       return
     game = self.guilds[current_guild][host_id]
     game_screen = Board(game=game, update_request=self.update_request)

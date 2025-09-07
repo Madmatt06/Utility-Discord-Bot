@@ -27,7 +27,7 @@ class SyncTree(commands.Cog):
     await self.bot.tree.sync()
     print('Command tree synced.')
     message = await interaction.original_response()
-    await edit_message(edit='Done', message=message)
+    await edit_message(message='Done', original_response=message)
     self.last_sync = time.time()
 
   @commands.command()

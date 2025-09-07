@@ -30,17 +30,18 @@ async def followup_message(message: str, interaction: discord.Interaction, ephem
     else:
       await interaction.followup.send(content=message, ephemeral=ephemeral, view=view)
 
-async def edit_message(edit: str, message: discord.Interaction.original_response, view:discord.ui.View=None):
+async def edit_message(message: str, original_response: discord.Interaction.message,
+                       view: discord.ui.View = None):
   if settings.PREFIX:
     if view is None:
-      await message.edit(content=f'{settings.PREFIX} ({edit})')
+      await original_response.edit(content=f'{settings.PREFIX} ({message})')
     else:
-      await message.edit(content=f'{settings.PREFIX} ({edit})', view=view)
+      await original_response.edit(content=f'{settings.PREFIX} ({message})', view=view)
   else:
     if view is None:
-      await message.edit(content=edit)
+      await original_response.edit(content=message)
     else:
-      await message.edit(content=edit, view=view)
+      await original_response.edit(content=message, view=view)
 
 async def edit_interaction(message: str, interaction: discord.Interaction, view:discord.ui.View=None):
   if settings.PREFIX:
@@ -50,7 +51,7 @@ async def edit_interaction(message: str, interaction: discord.Interaction, view:
       await interaction.response.edit_message(content=f'{settings.PREFIX} ({message})', view=view)
   else:
     if view is None:
-      await interaction.respone.edit_message(content=message)
+      await interaction.response.edit_message(content=message)
     else:
       await interaction.response.edit_message(content=message, view=view)
 

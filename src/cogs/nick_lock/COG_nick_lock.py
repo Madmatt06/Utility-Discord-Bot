@@ -82,18 +82,18 @@ class NickLock(commands.Cog):
     try:
       await username.edit(nick=nick)
     except discord.errors.Forbidden:
-      await edit_message(edit='Looks like I don\'t have permissions to do that!', message=message)
+      await edit_message(message='Looks like I don\'t have permissions to do that!', original_response=message)
       return
     except Exception as bot_error:
       # Keeps User informed something happened and raises error to make debugging easier
-      await edit_message(edit='Sorry, I can\'t do that right now. Try again later.', message=message)
+      await edit_message(message='Sorry, I can\'t do that right now. Try again later.', original_response=message)
       logging.error(bot_error)
       raise
 
     if not is_edited:
-      await edit_message(edit='Nickname lock set', message=message)
+      await edit_message(message='Nickname lock set', original_response=message)
     else:
-      await edit_message(edit='Existing Nickname lock edited', message=message)
+      await edit_message(message='Existing Nickname lock edited', original_response=message)
 
 
   @nick_lock.command(name=create_command('remove'), description='Allows the user to change their nickname')
@@ -110,11 +110,11 @@ class NickLock(commands.Cog):
     message = await interaction.original_response()
 
     if not username.id in current_guild.user_nicks:
-      await edit_message(edit='No Locks found for user', message=message)
+      await edit_message(message='No Locks found for user', original_response=message)
       return
 
     current_guild.user_nicks.pop(username.id)
-    await edit_message(edit='Done', message=message)
+    await edit_message(message='Done', original_response=message)
 
 
   async def cog_unload(self) -> None:

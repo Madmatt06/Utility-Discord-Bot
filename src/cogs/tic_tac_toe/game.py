@@ -63,7 +63,7 @@ class Game:
       match:int = self.board[0]
       win:bool = True
       for i in range(1,3):
-        if self.board[i*4+1] != match:
+        if self.board[i*4] != match:
           win = False
           break
       if win:

@@ -42,14 +42,15 @@ class Buttons(discord.ui.View):
       print(f'Recieved error when attempting to pin {error.code} with explanation {await error.response.text()}')
       if error.code == 50021:
         button.disabled = True
-        await edit_message(edit='I could not pin this message', message=interaction.message, view=self)
+        await edit_message(message='I could not pin this message', original_response=interaction.message, view=self)
         await interaction.response.defer()
         return
-      await edit_message(edit='Something went wrong', message=interaction.message)
+      await edit_message(message='Something went wrong', original_response=interaction.message)
       await interaction.response.defer()
       return
     self.clear_items()
-    await edit_message(edit=f'Message Pinned! {repeat_message_link}', message=interaction.message, view=self)
+    await edit_message(message=f'Message Pinned! {repeat_message_link}', original_response=interaction.message,
+                       view=self)
     await interaction.response.defer()
   @discord.ui.button(label='Decline Request',style=discord.ButtonStyle.danger)
   async def decline_button(self, interaction:discord.Interaction, button:discord.ui.Button):
@@ -65,7 +66,8 @@ class Buttons(discord.ui.View):
     else:
       print(f'No Message link was left in request. Repeat is {repeat_message_link}')
     self.clear_items()
-    await edit_message(edit=f'Pin request declined {repeat_message_link}', message=interaction.message, view=self)
+    await edit_message(message=f'Pin request declined {repeat_message_link}', original_response=interaction.message,
+                       view=self)
     await interaction.response.defer()
 
 
