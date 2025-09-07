@@ -10,23 +10,24 @@ class Game:
       opponent_id     The user id of the opponent for the game
   """
   def __init__(self, host_id:int, opponent_id:int, board:list[int] = None):
-    self.board: list[int] = board if not board is None else [0] * 9
-    self.turn = False
-    self.host_id = host_id
-    self.opponent_id = opponent_id
+    self.board:list[int] = board if not board is None else [0] * 9
+    self.turn:bool = False
+    self.host_id:int = host_id
+    self.opponent_id:int = opponent_id
 
-  def play(self, position:int, player:bool) -> bool:
+  def play(self, position:int, player:int) -> bool:
 
     # Checks if play should be allowed by checking if position is valid and if it's the players turn
     if self.board[position] != 0: return False
-    if self.turn != player: return False
+    if self.turn != False if player == self.host_id else True if player == self.host_id else None: return False
 
     # Saves the play
-    self.board[position] = 1 if player else 2
+    self.board[position] = 1 if not self.turn else 2
+    self.turn = not self.turn
     return True
 
   def get_turn(self) -> int:
-    return self.host_id if self.turn else self.opponent_id
+    return self.host_id if not self.turn else self.opponent_id
 
   def get_board(self) -> list[int]:
     return self.board.copy()
@@ -78,24 +79,27 @@ class Game:
         return match
     return 0
 
+  def check_playable(self) -> bool:
+    return 0 in self.board
+
   def game_screen(self) -> tuple[int, str]:
     screen:list[str] = []
     option:int = 0
     iteration:int = 1
     turn:bool = True
-    screen.append(" ")
+    screen.append(".   ")
     for tile in self.board:
       screen.append(" ")
-      if tile == "":
+      if tile == 0:
         if turn:
           option += 1
           screen.append(f"{option}")
         else:
           screen.append(" ")
       else:
-        screen.append("X" if tile == 0 else "O")
+        screen.append("X" if tile == 1 else "O")
       if iteration % 3 == 0 and iteration != 9:
-        screen.append("\n -----------\n ")
+        screen.append("\n -----------\n   ")
       elif iteration != 9:
         screen.append(" |")
       else:
@@ -105,10 +109,16 @@ class Game:
 
   def did_win(self) -> int:
     did_win:int = self.check_horizontal()
-    did_win += self.check_vertical()
-    did_win += self.check_diagonal()
-    if did_win > 2 or did_win < 0:
-      return -1
-    return did_win
+    if did_win > 0:
+      return self.host_id if did_win == 1 else self.opponent_id
+    did_win:int = self.check_vertical()
+    if did_win > 0:
+      return self.host_id if did_win == 1 else self.opponent_id
+    did_win:int = self.check_diagonal()
+    if did_win > 0:
+      return self.host_id if did_win == 1 else self.opponent_id
+    if self.check_playable():
+      return 0
+    return -1
 
     

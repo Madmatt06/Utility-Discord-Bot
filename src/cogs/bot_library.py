@@ -16,6 +16,19 @@ async def respond_message(message: str, interaction: discord.Interaction, epheme
     else:
       await interaction.response.send_message(content=message, ephemeral=ephemeral, view=view)
 
+async def followup_message(message: str, interaction: discord.Interaction, ephemeral: bool, view:discord.ui.View=None):
+  if settings.PREFIX:
+    if view is None:
+      await interaction.followup.send(content=f'{settings.PREFIX} ({message})', ephemeral=ephemeral)
+    else:
+      await interaction.followup.send(content=f'{settings.PREFIX} ({message})', ephemeral=ephemeral,
+                                              view=view)
+
+  else:
+    if view is None:
+      await interaction.followup.send(content=message, ephemeral=ephemeral)
+    else:
+      await interaction.followup.send(content=message, ephemeral=ephemeral, view=view)
 
 async def edit_message(edit: str, message: discord.Interaction.original_response, view:discord.ui.View=None):
   if settings.PREFIX:
@@ -28,6 +41,18 @@ async def edit_message(edit: str, message: discord.Interaction.original_response
       await message.edit(content=edit)
     else:
       await message.edit(content=edit, view=view)
+
+async def edit_interaction(message: str, interaction: discord.Interaction, view:discord.ui.View=None):
+  if settings.PREFIX:
+    if view is None:
+      await interaction.response.edit_message(content=f'{settings.PREFIX} ({message})')
+    else:
+      await interaction.response.edit_message(content=f'{settings.PREFIX} ({message})', view=view)
+  else:
+    if view is None:
+      await interaction.respone.edit_message(content=message)
+    else:
+      await interaction.response.edit_message(content=message, view=view)
 
 
 async def send_message(message: str, channel: discord.Interaction.channel, view:discord.ui.View=None):
