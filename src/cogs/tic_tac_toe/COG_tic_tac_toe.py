@@ -1,3 +1,5 @@
+import random
+
 import discord
 from discord.ext import commands
 from discord import app_commands, Interaction
@@ -15,6 +17,12 @@ class TicTacToe(commands.Cog):
 
   @tic_tac_toe.command(name=create_command('start'), description='Allows you to start a game against someone')
   async def start(self, interaction: Interaction, opponent: discord.Member):
+    if interaction.user.id == opponent.id:
+      await respond_message(message=f'You can\'t play a game against yourself!',interaction=interaction, ephemeral=True)
+      return
+    if opponent.bot:
+      await respond_message(message=f'You can\'t play against a bot!', interaction=interaction, ephemeral=True)
+      return
     await respond_message(message=f'Starting game against opponent {opponent.name}', interaction=interaction,
                           ephemeral=True)
     message: Interaction.original_response = await interaction.original_response()
@@ -27,11 +35,12 @@ class TicTacToe(commands.Cog):
       await edit_message(message=f'You are already the host of a game against {existing_opponent}',
                          original_response=message)
       return
-    self.guilds[current_guild][host_id] = Game(host_id=host_id, opponent_id=opponent.id)
+    turn_rng = random.randint(0,1)
+    self.guilds[current_guild][host_id] = Game(host_id=host_id, opponent_id=opponent.id, turn=False if turn_rng == 0 else True)
     _, screen = self.guilds[current_guild][host_id].game_screen()
     print(f'rendering game to channel.\n{screen}')
     game_screen = Board(game=self.guilds[current_guild][host_id], update_request=self.update_request)
-    await send_message(message=f'{interaction.user.mention} Vs {opponent.mention}. {interaction.user.mention} goes first', channel=message.channel, view=game_screen)
+    await send_message(message=f'{interaction.user.mention} Vs {opponent.mention}. {interaction.user.mention if turn_rng == 0 else opponent.mention} goes first', channel=message.channel, view=game_screen)
     print('Finished Game Creation')
     print(self.guilds)
 

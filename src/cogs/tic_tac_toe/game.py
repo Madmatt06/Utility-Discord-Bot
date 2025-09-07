@@ -9,9 +9,9 @@ class Game:
       host_id         The user id of the host of the game
       opponent_id     The user id of the opponent for the game
   """
-  def __init__(self, host_id:int, opponent_id:int, board:list[int] = None):
+  def __init__(self, host_id:int, opponent_id:int, turn:bool = False, board:list[int] = None):
     self.board:list[int] = board if not board is None else [0] * 9
-    self.turn:bool = False
+    self.turn:bool = turn
     self.host_id:int = host_id
     self.opponent_id:int = opponent_id
 
