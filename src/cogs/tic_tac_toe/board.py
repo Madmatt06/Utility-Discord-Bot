@@ -21,7 +21,7 @@ UNEXPECTED_ERROR:str = 'Something went wrong!'
 FAILED_UPDATE:str = 'Your play was accepted but the game screen could not be updated. Use /resume to load a new game screen'
 
 class Board(discord.ui.View):
-    def __init__(self, *, game: game, update_request:Callable[[int, int], bool], timeout=180):
+    def __init__(self, *, game: game, update_request:Callable[[int, int], bool], timeout=None):
         super().__init__(timeout=timeout)
         board = game.get_board()
         if board is None:
