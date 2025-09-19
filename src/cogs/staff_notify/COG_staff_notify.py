@@ -17,9 +17,9 @@ class Staff(commands.Cog):
     if os.path.isfile(f'{SAVE_PATH}/{SAVE}'):
       with open(f'{SAVE_PATH}/{SAVE}', 'r') as save_file:
         save_data: str = save_file.read()
-        save_data_by_guild: [str] = save_data.splitlines()
+        save_data_by_guild: list[str] = save_data.splitlines()
         for guild in save_data_by_guild:
-          guild_data: [str] = guild.split(' ')
+          guild_data: list[str] = guild.split(' ')
           try:
             data[int(guild_data[0])] = int(guild_data[1])
           except ValueError:
@@ -27,7 +27,7 @@ class Staff(commands.Cog):
           except Exception as error:
             print(f'unknown error occurred. Stopping Load. {error}')
             return
-    self.guilds_saved:[int, int] = data
+    self.guilds_saved:dict[int, int] = data
 
   @app_commands.command(name=create_command('notify channel'), description='Sets channel for notifications for admins '
                                                                            'to appear.')
