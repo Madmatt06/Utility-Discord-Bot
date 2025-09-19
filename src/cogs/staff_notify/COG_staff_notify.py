@@ -29,7 +29,10 @@ class Staff(commands.Cog):
             return
     self.guilds_saved:[int, int] = data
 
-  @app_commands.command(name=create_command('notify channel'), description='Sets channel for notifications to appear')
+  @app_commands.command(name=create_command('notify channel'), description='Sets channel for notifications to appear. '
+                                                                           'This channel should only be accessible to '
+                                                                           'who you want to be able to interact with '
+                                                                           'the notifications.')
   async def set_staff_channel(self, interaction: discord.Interaction):
     if not interaction.user.guild_permissions.administrator:
       await respond_message(message=PERM_ERROR, interaction=interaction, ephemeral=True)
