@@ -12,6 +12,13 @@ class Buttons(discord.ui.View):
     self.message_id = message_id
     self.channel_id = channel_id
     self.requester_id = requester_id
+
+  async def interaction_check(self, interaction: Interaction) -> bool:
+    if not interaction.channel.permissions_for(interaction.user).manage_messages:
+      await respond_message(message='You don\'t have permission to manage messages!', interaction=interaction, ephemeral=True)
+      return False
+    return True
+  
   @discord.ui.button(label='Pin Message',style=discord.ButtonStyle.green)
   async def accept_button(self,interaction:discord.Interaction, button:discord.ui.Button):
     channel: discord.TextChannel = self.bot.get_channel(self.channel_id)
