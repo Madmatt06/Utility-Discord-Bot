@@ -24,7 +24,7 @@ jobs:
         with:
           registry: ${{ gitea.instance }}/${{ gitea.owner }}
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.GITEA_TOKEN }}
+          password: ${{ secrets.PACKAGE_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta
