@@ -8,7 +8,12 @@ on:
     branches: [ "main", "latest" ]
 
 jobs:
-  build:
+  # ===============================================================
+  # == JOB FOR GITHUB ACTIONS                                    ==
+  # ===============================================================
+  build_on_github:
+    # This entire job will only run on GitHub
+    if: ${{ !env.GITEA_ACTIONS }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,66 +24,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -- DYNAMIC ENVIRONMENT SETUP (FINAL FIX) --
-      # We now set the full image path here to avoid parser errors later.
-      - name: Set up Environment for GitHub
-        if: ${{ !env.GITEA_ACTIONS }}
-        run: |
-          echo "IMAGE_PATH=ghcr.io/${{ github.repository }}" >> $GITHUB_ENV
-          echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
-
-      - name: Set up Environment for Gitea
-        if: ${{ env.GITEA_ACTIONS }}
-        run: |
-          echo "IMAGE_PATH=${{ gitea.instance }}/${{ gitea.repository }}" >> $GITHUB_ENV
-          echo "REGISTRY=${{ gitea.instance }}/${{ gitea.owner }}" >> $GITHUB_ENV
-
-
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226
 
-      # -- CONDITIONAL LOGIN --
       - name: Log into GHCR
-        if: ${{ !env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log into Gitea Registry
-        if: ${{ env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.GITEA_TOKEN }}
-
-      # -- METADATA EXTRACTION (FIXED) --
-      # This step now uses the pre-built IMAGE_PATH variable.
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934
         with:
-          images: ${{ env.IMAGE_PATH }}
+          images: ghcr.io/${{ github.repository }}
 
-      # -- BUILD & PUSH --
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          # The cache reference must also use the generic IMAGE_PATH
-          cache-from: type=registry,ref=${{ env.IMAGE_PATH }}:buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE_PATH }}:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # -- CONDITIONAL SIGNING (GitHub Only) --
-      - name: Install and sign with cosign
-        if: ${{ !env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
+      - name: Sign the published Docker image
+        if: github.event_name != 'pull_request'
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
@@ -86,3 +62,44 @@ jobs:
           curl -sL -o cosign https://github.com/sigstore/cosign/releases/download/v2.2.4/cosign-linux-amd64
           chmod +x cosign
           ./cosign sign --yes "${TAGS}@${DIGEST}"
+
+
+  # ===============================================================
+  # == JOB FOR GITEA ACTIONS                                     ==
+  # ===============================================================
+  build_on_gitea:
+    # This entire job will only run on Gitea
+    if: ${{ env.GITEA_ACTIONS }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226
+
+      - name: Log into Gitea Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        with:
+          registry: ${{ gitea.instance }}/${{ gitea.owner }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.GITEA_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934
+        with:
+          images: ${{ gitea.instance }}/${{ gitea.repository }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=${{ gitea.instance }}/${{ gitea.repository }}:buildcache
+          cache-to: type=registry,ref=${{ gitea.instance }}/${{ gitea.repository }}:buildcache,mode=max
