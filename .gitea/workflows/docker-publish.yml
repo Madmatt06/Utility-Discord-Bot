@@ -18,13 +18,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure Buildx for insecure registry
+        run: |
+          mkdir -p ~/.docker
+          echo "[registry.\"${DOMAIN}\"]" > ~/.docker/config.toml
+          echo "  http = true" >> ~/.docker/config.toml
+          echo "  insecure = true" >> ~/.docker/config.toml
+        env:
+          DOMAIN: ${{ secrets.DOMAIN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          config-inline: |
-            [registry."${DOMAIN}"]
-              http = true
-              insecure = true
+          config: ~/.docker/config.toml
 
       - name: Normalize repository name
         id: normalize
