@@ -1,0 +1,44 @@
+name: Docker (Gitea)
+
+on:
+  push:
+    branches: [ "main", "latest" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "main", "latest" ]
+
+jobs:
+  build_on_gitea:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into Gitea Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ gitea.instance }}/${{ gitea.owner }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.GITEA_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ gitea.instance }}/${{ gitea.repository }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=${{ gitea.instance }}/${{ gitea.repository }}:buildcache
+          cache-to: type=registry,ref=${{ gitea.instance }}/${{ gitea.repository }}:buildcache,mode=max
