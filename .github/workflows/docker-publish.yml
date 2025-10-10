@@ -13,32 +13,31 @@ jobs:
     permissions:
       contents: read
       packages: write
-      # This is for GitHub's OIDC token
       id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -- DYNAMIC ENVIRONMENT SETUP (CORRECTED) --
-      # These are now separate steps. GitHub's parser will skip the Gitea step entirely.
+      # -- DYNAMIC ENVIRONMENT SETUP (FINAL FIX) --
+      # We now set the full image path here to avoid parser errors later.
       - name: Set up Environment for GitHub
         if: ${{ !env.GITEA_ACTIONS }}
         run: |
+          echo "IMAGE_PATH=ghcr.io/${{ github.repository }}" >> $GITHUB_ENV
           echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
-          echo "IMAGE_NAME=${{ github.repository }}" >> $GITHUB_ENV
 
       - name: Set up Environment for Gitea
         if: ${{ env.GITEA_ACTIONS }}
         run: |
+          echo "IMAGE_PATH=${{ gitea.instance }}/${{ gitea.repository }}" >> $GITHUB_ENV
           echo "REGISTRY=${{ gitea.instance }}/${{ gitea.owner }}" >> $GITHUB_ENV
-          echo "IMAGE_NAME=${{ gitea.repository_name }}" >> $GITHUB_ENV
+
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
 
       # -- CONDITIONAL LOGIN --
-      # Login for GitHub Actions
       - name: Log into GHCR
         if: ${{ !env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
@@ -47,7 +46,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Login for Gitea Actions
       - name: Log into Gitea Registry
         if: ${{ env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
@@ -56,13 +54,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.GITEA_TOKEN }}
 
+      # -- METADATA EXTRACTION (FIXED) --
+      # This step now uses the pre-built IMAGE_PATH variable.
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_PATH }}
 
-      # -- MODIFIED BUILD & PUSH --
+      # -- BUILD & PUSH --
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
@@ -72,8 +72,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          # The cache reference must also use the generic IMAGE_PATH
+          cache-from: type=registry,ref=${{ env.IMAGE_PATH }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_PATH }}:buildcache,mode=max
 
       # -- CONDITIONAL SIGNING (GitHub Only) --
       - name: Install and sign with cosign
