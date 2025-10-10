@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Allow insecure registry
+        run: |
+          echo '{ "insecure-registries": [ "'"${ secrets.DOMAIN }"'" ] }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker || sudo service docker restart
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
