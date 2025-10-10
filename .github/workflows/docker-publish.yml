@@ -7,11 +7,6 @@ on:
   pull_request:
     branches: [ "main", "latest" ]
 
-env:
-  # This will be overridden in the job below
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,17 +20,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -- DYNAMIC ENVIRONMENT SETUP --
-      # Sets the correct registry and image name for the platform
-      - name: Set up environment
+      # -- DYNAMIC ENVIRONMENT SETUP (CORRECTED) --
+      # These are now separate steps. GitHub's parser will skip the Gitea step entirely.
+      - name: Set up Environment for GitHub
+        if: ${{ !env.GITEA_ACTIONS }}
         run: |
-          if [ "${{ env.GITEA_ACTIONS }}" = "true" ]; then
-            echo "REGISTRY=${{ gitea.instance }}/${{ gitea.owner }}" >> $GITHUB_ENV
-            echo "IMAGE_NAME=${{ gitea.repository_name }}" >> $GITHUB_ENV
-          else
-            echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
-            echo "IMAGE_NAME=${{ github.repository }}" >> $GITHUB_ENV
-          fi
+          echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ github.repository }}" >> $GITHUB_ENV
+
+      - name: Set up Environment for Gitea
+        if: ${{ env.GITEA_ACTIONS }}
+        run: |
+          echo "REGISTRY=${{ gitea.instance }}/${{ gitea.owner }}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ gitea.repository_name }}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
@@ -43,7 +40,7 @@ jobs:
       # -- CONDITIONAL LOGIN --
       # Login for GitHub Actions
       - name: Log into GHCR
-        if: ${{ env.GITEA_ACTIONS != 'true' && github.event_name != 'pull_request' }}
+        if: ${{ !env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -52,7 +49,7 @@ jobs:
 
       # Login for Gitea Actions
       - name: Log into Gitea Registry
-        if: ${{ env.GITEA_ACTIONS == 'true' && github.event_name != 'pull_request' }}
+        if: ${{ env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -66,7 +63,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       # -- MODIFIED BUILD & PUSH --
-      # Uses a more portable cache type
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
@@ -76,21 +72,16 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          # Use 'registry' cache as it is more portable than 'gha'
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-      # -- CONDITIONAL SIGNING --
-      # Image signing with cosign relies on GitHub's OIDC and will only run there
-      - name: Install cosign
-        if: ${{ env.GITEA_ACTIONS != 'true' && github.event_name != 'pull_request' }}
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
-        with:
-          cosign-release: 'v2.2.4'
-
-      - name: Sign the published Docker image
-        if: ${{ env.GITEA_ACTIONS != 'true' && github.event_name != 'pull_request' }}
+      # -- CONDITIONAL SIGNING (GitHub Only) --
+      - name: Install and sign with cosign
+        if: ${{ !env.GITEA_ACTIONS && github.event_name != 'pull_request' }}
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+        run: |
+          curl -sL -o cosign https://github.com/sigstore/cosign/releases/download/v2.2.4/cosign-linux-amd64
+          chmod +x cosign
+          ./cosign sign --yes "${TAGS}@${DIGEST}"
