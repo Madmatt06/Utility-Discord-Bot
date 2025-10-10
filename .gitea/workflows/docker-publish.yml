@@ -23,7 +23,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           # This line was the problem. It needs the Gitea instance variable.
-          registry: ${{ gitea.instance }}
+          registry: ${{ DOMAIN }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.PACKAGE_TOKEN }}
 
@@ -31,7 +31,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ gitea.instance }}/${{ gitea.repository }}
+          images: ${{ DOMAIN }}/${{ gitea.repository }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -41,5 +41,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=${{ gitea.instance }}/${{ gitea.repository }}:buildcache
-          cache-to: type=registry,ref=${{ gitea.instance }}/${{ gitea.repository }}:buildcache,mode=max
+          cache-from: type=registry,ref=${{ DOMAIN }}/${{ gitea.repository }}:buildcache
+          cache-to: type=registry,ref=${{ DOMAIN }}/${{ gitea.repository }}:buildcache,mode=max
