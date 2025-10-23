@@ -10,7 +10,7 @@ from src.cogs.tic_tac_toe import game
 
 X = '❌'
 O = '⭕'
-BLANK = '⬜️'
+BLANK = '\u200b' # Used to be ⬜️. I think a blank spot looks better
 
 WRONG_USER:str = 'This is not your game!'
 NOT_TURN:str = 'It\'s not your turn!'
@@ -56,6 +56,7 @@ class Board(discord.ui.View):
                     print(f'Index out of range')
                     return False
                 child.label = X if board[tile_index-1] == 1 else (O if board[tile_index-1] == 2 else BLANK)
+                child.style = discord.ButtonStyle.success if board[tile_index-1] == 1 else (discord.ButtonStyle.primary if board[tile_index-1] == 2 else discord.ButtonStyle.secondary)
                 child.disabled = (board[tile_index-1] != 0)
         return True
 
