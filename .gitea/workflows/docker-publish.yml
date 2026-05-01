@@ -6,6 +6,8 @@ on:
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main", "latest" ]
+  schedule:
+    - cron: '0 2 * * *'
 
 jobs:
   build_on_gitea:
